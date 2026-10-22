@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // E-mails liberados para usar o app. Adicione/remova aqui.
+    function equipe() {
+      return request.auth != null && request.auth.token.email in [
+        'agencia.mkt.belarmino@gmail.com',
+        'EMAIL_DA_EVELYN@gmail.com',
+        'EMAIL_DA_EMILY@gmail.com'
+      ];
+    }
+
+    // Perfis: todos da equipe veem; cada um só edita o próprio
+    match /users/{userId} {
+      allow read: if equipe();
+      allow write: if equipe() && request.auth.uid == userId;
+    }
+
+    // Colunas do quadro
+    match /meta/{docId} {
+      allow read, write: if equipe();
+    }
+
+    // Tarefas: toda a equipe vê e edita
+    match /tasks/{taskId} {
+      allow read, write: if equipe();
+    }
+  }
+}

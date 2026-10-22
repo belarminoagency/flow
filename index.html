@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>belarmino flow</title>
+<meta name="theme-color" content="#17158F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="b.flow">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&family=Poppins:wght@400;500;600&display=swap">
+<style>
+/* Layout: topo índigo → resumo do dia → filtros → quadro (celular: 1 coluna por vez com abas; computador: todas lado a lado) */
+:root{
+  --indigo:#17158F; --lime:#D7E928; --sky:#AAB8FF; --orange:#F29E4C; --violet:#9B7BFF;
+  --bg:#F4F5FA; --surface:#FFFFFF; --col:#E9EBF7; --soft:#ECEEFA; --ink:#14134A; --muted:#5E6290; --line:#D9DCF0;
+  --brand:#17158F; --brand-ink:#FFFFFF;
+  --late:#C8293B; --late-bg:#FBE3E6; --ok:#2E7D4F; --ok-bg:#E0F2E7; --warn-bg:#FFF6D6;
+  --display:"Montserrat",system-ui,sans-serif; --body:"Poppins",system-ui,sans-serif;
+  --r:16px; --r-sm:10px;
+  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  --gl:max(16px,env(safe-area-inset-left,0px)); --gr:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0C0B2E; --surface:#18174C; --col:#121140; --soft:#22216A; --ink:#EEF0FF; --muted:#A3A8D6; --line:#2C2B78;
+  --brand:#AAB8FF; --brand-ink:#0C0B2E;
+  --late:#FF8796; --late-bg:#3A1430; --ok:#7FE0A6; --ok-bg:#123A2A; --warn-bg:#2E2A10; color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html,body,#root{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.5 var(--body);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:800;margin:0;text-wrap:balance;letter-spacing:-.01em}
+[hidden]{display:none!important}
+svg.i{width:16px;height:16px;flex:none}
+
+/* ---------- Login ---------- */
+.auth{min-height:100%;min-height:100dvh;display:grid;place-items:center;background:var(--indigo);color:#fff;padding:calc(24px + var(--safe-t)) var(--gr) calc(24px + var(--safe-b)) var(--gl);position:relative;overflow:hidden}
+.auth::before,.auth::after{content:"";position:absolute;border-radius:40px;background:var(--sky);opacity:.18}
+.auth::before{width:260px;height:260px;top:-80px;right:-90px;transform:rotate(18deg)}
+.auth::after{width:180px;height:180px;bottom:-60px;left:-50px;background:var(--lime);opacity:.22;transform:rotate(-12deg)}
+.auth-box{width:100%;max-width:380px;position:relative;z-index:1;display:grid;gap:22px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;font:800 26px/1 var(--display);color:var(--indigo);position:relative;flex:none}
+.logo::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--lime);position:absolute;right:9px;bottom:11px}
+.brand-name{font:800 22px/1 var(--display)}
+.brand-name small{display:block;font:400 12px/1.4 var(--body);opacity:.75;margin-top:4px}
+.auth h1{font-size:28px;line-height:1.15}
+.auth h1 em{font-style:normal;color:var(--lime)}
+.card-form .link{color:#17158F}
+.card-form{background:#fff;color:#14134A;border-radius:20px;padding:20px;display:grid;gap:14px;color-scheme:light}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#ECEEFA;border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;padding:9px;border-radius:9px;font-weight:600;color:#5E6290}
+.seg button[aria-selected="true"]{background:#fff;color:#17158F;box-shadow:0 1px 3px rgba(23,21,143,.15)}
+.field{display:grid;gap:5px}
+.field>label{font-size:12px;font-weight:600;color:var(--muted)}
+.card-form .field>label{color:#5E6290}
+.input{width:100%;border:1.5px solid var(--line);background:var(--surface);border-radius:var(--r-sm);padding:11px 12px;min-height:44px}
+.card-form .input{border-color:#D9DCF0;background:#fff;color:#14134A}
+.input:focus{border-color:var(--brand);outline:none}
+textarea.input{min-height:84px;resize:vertical}
+.btn{border:0;border-radius:12px;padding:11px 18px;font-weight:600;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn-primary{background:var(--indigo);color:#fff}
+.btn-lime{background:var(--lime);color:#17158F}
+.btn-soft{background:var(--soft);color:var(--ink)}
+.btn-ghost{background:transparent;color:var(--muted)}
+.btn-danger{background:var(--late-bg);color:var(--late)}
+.btn-danger-solid{background:var(--late);color:#fff}
+.btn:disabled{opacity:.55}
+.link{background:none;border:0;color:var(--brand);font-weight:600;padding:0;text-decoration:underline;text-underline-offset:3px;justify-self:center}
+.err{background:#FBE3E6;color:#A11F30;border-radius:9px;padding:9px 11px;font-size:13px}
+.note{font-size:12px;color:#5E6290;margin:0}
+.photo-pick{display:flex;align-items:center;gap:14px}
+.photo-pick .av{width:64px;height:64px;font-size:22px}
+.demo-tag{background:var(--lime);color:#17158F;font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;justify-self:start}
+
+/* ---------- Avatares ---------- */
+.av{width:28px;height:28px;border-radius:50%;background:var(--sky);color:#17158F;display:grid;place-items:center;font:600 11px/1 var(--body);overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.av.lg{width:44px;height:44px;font-size:15px}
+
+/* ---------- Estrutura do app ---------- */
+.app{min-height:100%;display:flex;flex-direction:column}
+.top{background:var(--indigo);color:#fff;padding:calc(12px + var(--safe-t)) var(--gr) 0 var(--gl)}
+.top-row{display:flex;align-items:center;gap:12px;max-width:1400px;margin:0 auto}
+.top .logo{width:38px;height:38px;font-size:22px;border-radius:11px}
+.top .logo::after{width:6px;height:6px;right:8px;bottom:10px}
+.top-title{flex:1;min-width:0}
+.top-title b{display:block;font:800 17px/1.15 var(--display)}
+.top-title span{display:block;font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me-btn{border:2px solid var(--lime);background:transparent;padding:0;border-radius:50%;display:grid}
+.me-btn .av{width:36px;height:36px}
+.nav{display:flex;gap:4px;max-width:1400px;margin:12px auto 0}
+.nav button{border:0;background:transparent;color:#fff;opacity:.75;padding:10px 14px 12px;font-weight:600;position:relative}
+.nav button[aria-selected="true"]{opacity:1}
+.nav button[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:4px;border-radius:4px 4px 0 0;background:var(--lime)}
+
+.wrap{width:100%;max-width:1400px;margin:0 auto;padding:0 var(--gr) 0 var(--gl)}
+.banner{background:var(--warn-bg);border-radius:var(--r);padding:12px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.banner p{margin:0;flex:1 1 220px;font-size:13px}
+.banner b{display:block}
+
+/* Resumo */
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.stat{border:0;background:var(--surface);border-radius:var(--r);padding:10px 12px;text-align:left;display:grid;gap:0;border:2px solid transparent}
+.stat b{font:800 22px/1.15 var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);line-height:1.3}
+.stat.late b{color:var(--late)}
+.stat[aria-pressed="true"]{border-color:var(--brand)}
+
+/* Busca e filtros */
+.tools{display:flex;gap:8px;margin-top:12px;align-items:center}
+.search{flex:1;min-width:0;position:relative}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search .input{padding-left:38px;border-radius:999px}
+.icon-btn{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;min-height:44px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13px;white-space:nowrap}
+.icon-btn[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.badge{background:var(--lime);color:#17158F;border-radius:999px;font-size:11px;padding:0 7px;line-height:18px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px 0 2px;margin:0}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px 4px 4px;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-weight:500;font-size:13px;min-height:36px;flex:none}
+.chip.plain{padding:4px 14px}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.chip .av{width:26px;height:26px;font-size:10px}
+.active-filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted);align-items:center}
+.pill{background:var(--soft);border:0;border-radius:999px;padding:4px 6px 4px 11px;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--ink)}
+.pill svg{width:14px;height:14px}
+
+/* Abas de coluna (celular) */
+.coltabs{display:none;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:14px;padding-bottom:2px}
+.coltabs::-webkit-scrollbar{display:none}
+.coltab{border:0;background:var(--surface);border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;white-space:nowrap;flex:none}
+.coltab[aria-selected="true"]{background:var(--brand);color:var(--brand-ink)}
+.coltab .n{font-variant-numeric:tabular-nums;opacity:.7;font-weight:500}
+
+/* Quadro */
+.board{display:flex;gap:14px;overflow-x:auto;padding:14px var(--gr) calc(110px + var(--safe-b)) var(--gl);align-items:flex-start;max-width:1400px;margin:0 auto;width:100%}
+.col{background:var(--col);border-radius:var(--r);flex:1 0 270px;max-width:360px;display:flex;flex-direction:column;min-width:0}
+.col-head{display:flex;align-items:center;gap:8px;padding:12px 8px 8px 14px}
+.col-head h2{font-size:15px;flex:1;min-width:0;overflow-wrap:anywhere}
+.dot{width:12px;height:12px;border-radius:4px;flex:none}
+.count{font-size:12px;font-weight:600;color:var(--muted);background:var(--surface);border-radius:999px;padding:1px 9px;font-variant-numeric:tabular-nums}
+.more{border:0;background:transparent;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:var(--muted);flex:none}
+.more:hover{background:var(--soft);color:var(--ink)}
+.col-body{display:flex;flex-direction:column;gap:8px;padding:2px 8px 4px;min-height:40px}
+.col.over{outline:2px dashed var(--brand);outline-offset:-2px}
+.empty{font-size:13px;color:var(--muted);text-align:center;padding:18px 10px;border:1.5px dashed var(--line);border-radius:var(--r-sm)}
+.add-in-col{border:0;background:transparent;color:var(--muted);font-weight:600;text-align:left;padding:10px 14px 14px;border-radius:0 0 var(--r) var(--r);display:flex;gap:6px;align-items:center}
+.add-in-col:hover{color:var(--ink)}
+.add-col{flex:0 0 220px;border:2px dashed var(--line);background:transparent;border-radius:var(--r);min-height:56px;color:var(--muted);font-weight:600;display:flex;gap:6px;align-items:center;justify-content:center}
+.add-col:hover{border-color:var(--brand);color:var(--ink)}
+
+/* Card de tarefa */
+.task{background:var(--surface);border-radius:12px;box-shadow:0 1px 2px rgba(20,19,74,.08);display:flex;align-items:flex-start;position:relative}
+.task:hover{box-shadow:0 3px 12px rgba(20,19,74,.12)}
+.task.dragging{opacity:.4}
+.task-main{border:0;background:transparent;text-align:left;flex:1;min-width:0;padding:12px 4px 12px 14px;display:grid;gap:6px;cursor:pointer;border-radius:12px}
+.task-title{font-weight:600;font-size:14.5px;line-height:1.35;overflow-wrap:anywhere}
+.task-sub{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.task-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.task-meta .grow{flex:1}
+.meta{display:inline-flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+.meta svg{width:14px;height:14px}
+.meta.late{color:var(--late);font-weight:600}
+.meta.today{color:var(--brand);font-weight:600}
+.meta.allok{color:var(--ok);font-weight:600}
+.labels{display:flex;flex-wrap:wrap;gap:4px}
+.lbl{font-size:11px;font-weight:600;border-radius:6px;padding:2px 8px;line-height:1.5;background:var(--lb);color:var(--lf);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbl-pick{display:flex;flex-wrap:wrap;gap:8px}
+.lbl-pick button{border:2px solid transparent;border-radius:9px;padding:6px 12px 6px 8px;font-weight:600;font-size:13px;background:var(--lb);color:var(--lf);display:inline-flex;align-items:center;gap:6px;opacity:.55;min-height:38px}
+.lbl-pick button svg{width:14px;height:14px;opacity:0}
+.lbl-pick button[aria-pressed="true"]{opacity:1;border-color:var(--ink)}
+.lbl-pick button[aria-pressed="true"] svg{opacity:1}
+.lbl-pick .new{background:transparent;color:var(--muted);border:1.5px dashed var(--line);opacity:1}
+.lbl-pick .new svg{opacity:1}
+.lbl-row{display:flex;align-items:center;gap:6px}
+.lbl-row .lbl-name{flex:1;min-width:0;border:0;border-radius:10px;padding:10px 12px;text-align:left;font-weight:600;background:var(--lb);color:var(--lf);min-height:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbl-use{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.field-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.field-head .link{font-size:12px}
+.preview-lbl{font-size:14px;padding:6px 14px;justify-self:start}
+.urgent{background:var(--late-bg);color:var(--late);font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px}
+.task .more{margin:6px 6px 0 0}
+.sel-box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);display:grid;place-items:center;flex:none;margin:13px 0 0 12px;color:transparent;background:var(--surface)}
+.task.selected{box-shadow:0 0 0 2px var(--brand)}
+.task.selected .sel-box{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+
+/* Barra de seleção */
+.selbar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:var(--bg);padding:12px var(--gr) calc(12px + var(--safe-b)) var(--gl);display:flex;gap:10px;align-items:center;z-index:15}
+.selbar span{flex:1;font-weight:600}
+.selbar .btn-ghost{color:var(--bg)}
+
+.fab{position:fixed;right:calc(var(--gr) + 2px);bottom:calc(18px + var(--safe-b));background:var(--lime);color:#17158F;border:0;border-radius:18px;height:56px;padding:0 20px;font:800 15px/1 var(--display);box-shadow:0 6px 18px rgba(23,21,143,.3);display:flex;align-items:center;gap:8px;z-index:5}
+
+/* Equipe */
+.team{display:grid;gap:10px;padding:16px 0 calc(110px + var(--safe-b));max-width:720px}
+.member{background:var(--surface);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.member .av{width:48px;height:48px;font-size:16px}
+.member-info{flex:1 1 140px;min-width:0}
+.member-name{font-weight:600}
+.member-sub{font-size:12px;color:var(--muted);overflow-wrap:break-word}
+.stats{display:flex;gap:16px;text-align:center}
+.stats b{display:block;font:800 18px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stats span{font-size:11px;color:var(--muted)}
+.stats .late b{color:var(--late)}
+.section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+/* Folhas (modais) */
+.sheet-wrap{position:fixed;inset:0;background:rgba(12,11,46,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+@media (min-width:640px){.sheet-wrap{align-items:center}}
+.sheet{background:var(--surface);width:100%;max-width:520px;max-height:92%;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px var(--gr) calc(18px + var(--safe-b)) var(--gl);display:grid;gap:14px}
+@media (min-width:640px){.sheet{border-radius:22px;padding:22px}}
+.sheet-head{display:flex;align-items:center;gap:10px}
+.sheet-head h3{flex:1;font-size:18px;min-width:0;overflow-wrap:anywhere}
+.x{border:0;background:var(--soft);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row2>*{min-width:0}
+.menu{display:grid;gap:4px}
+.menu button{border:0;background:transparent;text-align:left;padding:12px;border-radius:12px;display:flex;align-items:center;gap:12px;font-weight:500;min-height:48px}
+.menu button:hover{background:var(--soft)}
+.menu button.danger{color:var(--late)}
+.menu button[aria-current="true"]{background:var(--soft);font-weight:600}
+.menu .hint{font-size:12px;color:var(--muted);padding:2px 12px}
+.menu-sep{height:1px;background:var(--line);margin:4px 0}
+.move-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.move-grid button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;display:flex;align-items:center;gap:8px;font-weight:600;text-align:left;min-height:48px}
+.move-grid button[aria-current="true"]{border-color:var(--brand);background:var(--soft)}
+.checklist{display:grid;gap:6px}
+.ck{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:10px;padding:6px 6px 6px 10px}
+.ck input[type=checkbox]{width:18px;height:18px;accent-color:var(--indigo);flex:none}
+.ck span{flex:1;overflow-wrap:anywhere}
+.ck.done span{text-decoration:line-through;color:var(--muted)}
+.ck button{border:0;background:transparent;color:var(--muted);width:32px;height:32px;border-radius:8px;display:grid;place-items:center}
+.ck-add{display:flex;gap:8px}
+.ck-add .input{flex:1;min-width:0}
+.progress{height:6px;border-radius:999px;background:var(--soft);overflow:hidden;margin-bottom:6px}
+.progress i{display:block;height:100%;background:var(--brand)}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.actions .right{display:flex;gap:8px;margin-left:auto}
+.confirm{background:var(--late-bg);color:var(--late);border-radius:12px;padding:12px;display:grid;gap:10px}
+.confirm p{margin:0;color:var(--ink);font-size:13px}
+.confirm .row{display:flex;gap:8px;flex-wrap:wrap}
+.meta-line{font-size:12px;color:var(--muted);margin:0}
+.colors{display:flex;gap:10px;flex-wrap:wrap}
+.colors button{width:36px;height:36px;border-radius:10px;border:3px solid transparent;display:grid;place-items:center;font-weight:700;font-size:12px}
+.colors button[aria-pressed="true"]{border-color:var(--ink)}
+.radio-list{display:grid;gap:8px}
+.radio-list label{display:flex;gap:10px;align-items:center;background:var(--soft);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink)}
+.radio-list input{accent-color:var(--indigo);width:18px;height:18px}
+
+.toast{position:fixed;left:50%;bottom:calc(88px + var(--safe-b));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 8px 8px 16px;border-radius:12px;font-weight:500;z-index:30;max-width:calc(100% - 32px);display:flex;gap:10px;align-items:center;min-height:44px}
+.toast button{border:0;background:var(--lime);color:#17158F;font-weight:600;border-radius:8px;padding:6px 12px}
+.loading{display:grid;place-items:center;height:100%;background:var(--indigo)}
+.loading .logo{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(.9);opacity:.7}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* ---------- Navegação ---------- */
+.nav button{display:inline-flex;align-items:center;gap:7px}
+.nav button svg{width:18px;height:18px}
+
+/* ---------- Início ---------- */
+.home{padding-bottom:calc(120px + var(--safe-b))}
+.hello{background:var(--indigo);color:#fff;border-radius:24px;padding:22px 20px 24px;margin-top:16px;position:relative;overflow:hidden;display:grid;gap:14px}
+.hello::before{content:"";position:absolute;width:170px;height:170px;border-radius:40px;background:#fff;opacity:.07;right:-60px;top:-60px;transform:rotate(20deg)}
+.hello::after{content:"";position:absolute;width:90px;height:90px;border-radius:26px;background:var(--lime);opacity:.16;right:28px;bottom:-46px;transform:rotate(-14deg)}
+.hello>*{position:relative;z-index:1}
+.hello-top{display:flex;align-items:center;gap:8px;font-size:13px;color:#DDE2FF}
+.hello-top svg{width:20px;height:20px;color:var(--lime)}
+.hello h1{font-size:clamp(28px,7.5vw,40px);line-height:1.08}
+.phrase-box{display:grid;gap:6px;border-left:4px solid var(--lime);padding:2px 0 2px 14px}
+.phrase-tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--lime);font-weight:600}
+.phrase{font-size:clamp(17px,4.6vw,21px);font-weight:500;line-height:1.45;margin:0;max-width:38ch;color:#fff}
+.sec-head{display:flex;align-items:center;gap:10px;margin:24px 0 10px}
+.sec-head h2{font-size:18px;flex:1}
+.grp{font:600 12px/1.4 var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 8px}
+.grp.late{color:var(--late)}
+.rlist{display:grid;gap:6px}
+.rt{display:flex;align-items:center;background:var(--surface);border-radius:14px;min-width:0}
+.done-btn{width:48px;height:48px;border:0;background:transparent;display:grid;place-items:center;flex:none;border-radius:14px}
+.circ{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:transparent}
+.done-btn:hover .circ{border-color:var(--ok);color:var(--ok)}
+.rt-main{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:10px 10px 10px 0;display:grid;gap:2px}
+.rt-main b{font-weight:600;overflow-wrap:anywhere}
+.rt-main span{font-size:12px;color:var(--muted)}
+.rt-main em{font-style:normal;font-weight:600}
+.rt-main em.late{color:var(--late)}
+.rt-main em.today{color:var(--brand)}
+.empty.big{display:grid;justify-items:center;gap:4px;padding:28px 16px;border:0;background:var(--surface);border-radius:var(--r);color:var(--muted)}
+.empty.big svg{width:28px;height:28px;color:var(--ok)}
+.empty.big b{color:var(--ink);font-size:15px}
+
+/* ---------- Clientes ---------- */
+.clients{padding-bottom:calc(120px + var(--safe-b))}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:10px}
+.ccard{border:0;background:var(--surface);border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;text-align:left;min-width:0}
+.ccard:hover{box-shadow:0 3px 12px rgba(20,19,74,.1)}
+.ccard>svg{color:var(--muted);width:18px;height:18px}
+.cmark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font:800 15px/1 var(--display);background:var(--lb);color:var(--lf);flex:none}
+.cmark svg{width:20px;height:20px}
+.ccard.all .cmark{background:var(--indigo);color:#fff}
+.cinfo{flex:1;min-width:0;display:grid}
+.cname{font-weight:600;overflow-wrap:anywhere}
+.csub{font-size:12px;color:var(--muted)}
+.csub .late,.chead-t .late{color:var(--late);font-weight:600}
+.chead{display:flex;align-items:center;gap:12px;margin-top:16px}
+.back{border:0;background:var(--surface);width:44px;height:44px;border-radius:13px;display:grid;place-items:center;flex:none}
+.chead-t{flex:1;min-width:0}
+.chead-t h1{font-size:22px;line-height:1.15;overflow-wrap:anywhere}
+.chead-t span{font-size:12px;color:var(--muted)}
+.sheet-head .cmark{width:38px;height:38px;font-size:13px}
+
+/* Celular: navegação embaixo, como app */
+@media (max-width:759px){
+  .top{padding-bottom:12px}
+  .nav{position:fixed;left:0;right:0;bottom:0;margin:0;max-width:none;background:var(--surface);border-top:1px solid var(--line);padding:6px var(--gr) calc(6px + var(--safe-b)) var(--gl);z-index:12;justify-content:space-around;box-shadow:0 -4px 16px rgba(20,19,74,.06)}
+  .nav button{flex:1;flex-direction:column;gap:3px;color:var(--muted);opacity:1;font-size:11px;padding:6px 4px}
+  .nav button svg{width:24px;height:24px;padding:3px 14px;box-sizing:content-box;border-radius:999px}
+  .nav button[aria-selected="true"]{color:var(--ink)}
+  .nav button[aria-selected="true"] svg{background:var(--lime);color:#17158F}
+  .nav button[aria-selected="true"]::after{display:none}
+  .fab{bottom:calc(84px + var(--safe-b))}
+  .board{padding-bottom:calc(170px + var(--safe-b))}
+  .team,.home,.clients{padding-bottom:calc(170px + var(--safe-b))}
+  .selbar{z-index:14}
+}
+/* Celular: uma coluna por vez */
+@media (max-width:759px){
+  .coltabs{display:flex}
+  .board{display:block;padding-top:10px}
+  .col{max-width:none;background:transparent}
+  .col:not(.active),.add-col{display:none}
+  .col-head{padding:4px 0 8px}
+  .col-body{padding:0}
+  .add-in-col{padding:12px 4px}
+  .stat b{font-size:20px}
+}
+@media (max-width:420px){.sel-label{display:none}}
+</style>
+</head>
+<body>
+<div id="root"><div class="loading"><div class="logo">b</div></div></div>
+
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   Constantes
+   ========================================================= */
+const DEFAULT_COLS = [
+  { id: 'todo',   name: 'A fazer',     color: 'sky' },
+  { id: 'doing',  name: 'Em produção', color: 'indigo' },
+  { id: 'review', name: 'Aprovação',   color: 'lime' },
+  { id: 'done',   name: 'Concluído',   color: 'ok' },
+];
+const COLORS = { sky: 'var(--sky)', indigo: '#17158F', lime: 'var(--lime)', ok: 'var(--ok)', orange: 'var(--orange)', violet: 'var(--violet)', late: 'var(--late)' };
+const PRIOS = { alta: 'Urgente', media: 'Normal', baixa: 'Pode esperar' };
+const PRIO_ORDER = { alta: 0, media: 1, baixa: 2 };
+const LABEL_COLORS = {
+  sky:    { name: 'Azul claro',  bg: '#AAB8FF', fg: '#17158F' },
+  indigo: { name: 'Índigo',      bg: '#17158F', fg: '#FFFFFF' },
+  lime:   { name: 'Verde-limão', bg: '#D7E928', fg: '#17158F' },
+  green:  { name: 'Verde',       bg: '#7FD8A2', fg: '#0E3A22' },
+  teal:   { name: 'Turquesa',    bg: '#6FD3D8', fg: '#0B3B3E' },
+  orange: { name: 'Laranja',     bg: '#F6B26B', fg: '#4A2500' },
+  pink:   { name: 'Rosa',        bg: '#F7A1C4', fg: '#55102F' },
+  violet: { name: 'Roxo',        bg: '#B59CFF', fg: '#2A1270' },
+  red:    { name: 'Vermelho',    bg: '#F08A8A', fg: '#5A0B0B' },
+  gray:   { name: 'Cinza',       bg: '#C9CCDD', fg: '#2B2D45' },
+};
+const DEFAULT_LABELS = [
+  { id: 'l-post', name: 'Post', color: 'sky' },
+  { id: 'l-stories', name: 'Stories', color: 'pink' },
+  { id: 'l-reels', name: 'Reels', color: 'violet' },
+  { id: 'l-anuncio', name: 'Anúncio', color: 'orange' },
+  { id: 'l-relatorio', name: 'Relatório', color: 'teal' },
+  { id: 'l-gravacao', name: 'Gravação', color: 'red' },
+  { id: 'l-fotos', name: 'Fotos', color: 'green' },
+  { id: 'l-reuniao', name: 'Reunião', color: 'gray' },
+];
+const PHRASES = {
+  manha: [
+    'Cada post começa com uma ideia. Comece a sua agora.',
+    'Marcas reais se constroem um dia de cada vez. Hoje é um deles.',
+    'Café na mão, foco no que importa. Bora!',
+    'O dia está em branco: faça dele um bom briefing.',
+    'Pequenas entregas de manhã viram grandes resultados à tarde.',
+    'Comece pelo mais difícil. O resto flui.',
+    'Quem planeja de manhã respira à tarde.',
+    'Hoje é dia de fazer o cliente sorrir.',
+    'Constância vence talento que não aparece.',
+    'Escolha a tarefa mais importante do dia e comece por ela.',
+    'Criatividade também acorda cedo. Aproveite.',
+    'Resultados reais nascem de hábitos reais.',
+    'Bora transformar ideia em conteúdo?',
+    'Um bom dia de trabalho começa com uma lista clara.',
+  ],
+  tarde: [
+    'Metade do dia feito. A outra metade é sua.',
+    'Respira, revisa e entrega. Você está indo bem.',
+    'Um card de cada vez. É assim que o quadro esvazia.',
+    'Termine o que está em produção antes de começar outra coisa.',
+    'Feito é melhor que perfeito. Depois a gente melhora.',
+    'Bateu o cansaço? Uma pausa curta e volta com tudo.',
+    'A tarde é ótima para aprovar o que ficou pronto de manhã.',
+    'Cada entrega no prazo é confiança ganha com o cliente.',
+    'O que dá pra concluir até o fim do dia? Foca nisso.',
+    'Equipe alinhada entrega mais e se cansa menos.',
+    'Detalhe bem feito é o que o cliente lembra.',
+    'Continua firme. O resultado vem de quem não para.',
+    'Pedir ajuda cedo vale mais que perder o prazo.',
+    'Movimento constante: um card de cada vez pra frente.',
+  ],
+  noite: [
+    'Dia cumprido. Descanse, amanhã tem mais.',
+    'Olhe o que você entregou hoje e se orgulhe.',
+    'Anote a tarefa de amanhã e desligue a cabeça.',
+    'Descansar também faz parte do processo criativo.',
+    'O que não deu hoje vira prioridade amanhã. Tudo bem.',
+    'Boas ideias aparecem com a mente descansada.',
+    'Obrigado pelo dia de hoje. A agência cresce com você.',
+    'Fecha o notebook e abre espaço para recarregar.',
+    'Hoje foi mais um tijolo na construção da marca.',
+    'Amanhã a gente continua de onde parou.',
+    'Respeite seu descanso como você respeita o prazo.',
+    'Grandes marcas são feitas de dias como o de hoje.',
+    'Desconecte. O quadro vai estar aqui amanhã.',
+    'Durma bem: amanhã tem cliente pra encantar.',
+  ],
+};
+const lblStyle = c => { const k = LABEL_COLORS[c] || LABEL_COLORS.gray; return `--lb:${k.bg};--lf:${k.fg}`; };
+const svg = p => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICON = {
+  cal: svg('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
+  check: svg('<path d="m5 12 4 4 10-10"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  x: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
+  dots: svg('<circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/>'),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  edit: svg('<path d="M4 20h4L19 9l-4-4L4 16v4Z"/>'),
+  trash: svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
+  move: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
+  select: svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8 12 3 3 5-6"/>'),
+  cols: svg('<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>'),
+  broom: svg('<path d="M14 4 9 13M6 13h9l2 7H4l2-7Z"/>'),
+  user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>'),
+  out: svg('<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/>'),
+  filter: svg('<path d="M4 6h16M7 12h10M10 18h4"/>'),
+  home: svg('<path d="M4 11 12 4l8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9Z"/>'),
+  briefcase: svg('<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>'),
+  users: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.6 3.1 2.4 3.5 5.2"/>'),
+  back: svg('<path d="m15 5-7 7 7 7"/>'),
+  chev: svg('<path d="m9 5 7 7-7 7"/>'),
+  sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  sunset: svg('<path d="M3 18h18M7 18a5 5 0 0 1 10 0M12 4v4M5 10l1.5 1.5M19 10l-1.5 1.5M8 22h8"/>'),
+  moon: svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>'),
+  tag: svg('<path d="M3 12V4h8l10 10-8 8L3 12Z"/><circle cx="7.5" cy="8.5" r="1.3" fill="currentColor"/>'),
+};
+
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const dayStr = (n = 0) => { const d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const initials = n => (n || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+const fmtDate = s => { if (!s) return ''; const [, m, d] = s.split('-'); const M = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return `${+d} ${M[+m - 1]}`; };
+const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+function avatar(u, cls = '') {
+  if (!u) return `<span class="av ${cls}" title="Sem responsável">${ICON.user}</span>`;
+  return `<span class="av ${cls}" title="${esc(u.name)}">${u.photo ? `<img src="${esc(u.photo)}" alt="">` : esc(initials(u.name))}</span>`;
+}
+let toastTimer;
+function toast(msg, action) {
+  $('.toast')?.remove(); clearTimeout(toastTimer);
+  const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status');
+  t.innerHTML = `<span>${esc(msg)}</span>${action ? `<button type="button">${esc(action.label)}</button>` : ''}`;
+  if (action) t.querySelector('button').onclick = () => { t.remove(); action.run(); };
+  document.body.appendChild(t);
+  toastTimer = setTimeout(() => t.remove(), action ? 6000 : 2400);
+}
+function resizeImage(file, size = 256) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width = c.height = size;
+        const s = Math.min(img.width, img.height);
+        c.getContext('2d').drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size);
+        res(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => rej(new Error('Não consegui abrir essa imagem. Tente outra foto (JPG ou PNG).'));
+      img.src = r.result;
+    };
+    r.onerror = rej; r.readAsDataURL(file);
+  });
+}
+const ERR = {
+  'auth/invalid-email': 'E-mail inválido. Confira se digitou certinho.',
+  'auth/user-not-found': 'Não achamos uma conta com esse e-mail. Crie sua conta na aba "Criar conta".',
+  'auth/wrong-password': 'Senha incorreta. Tente de novo ou use "Esqueci a senha".',
+  'auth/invalid-credential': 'E-mail ou senha incorretos. Tente de novo ou use "Esqueci a senha".',
+  'auth/email-already-in-use': 'Esse e-mail já tem conta. Use a aba "Entrar".',
+  'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
+  'auth/too-many-requests': 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.',
+  'auth/network-request-failed': 'Sem conexão com a internet. Verifique e tente de novo.',
+  'permission-denied': 'Esse e-mail não está liberado na equipe. Peça ao Kaique para adicionar.',
+};
+const errMsg = e => ERR[e?.code] || e?.message || 'Algo deu errado. Tente de novo.';
+
+/* =========================================================
+   Armazenamento: Firebase (real) ou Demonstração (local)
+   ========================================================= */
+const CFG = window.FIREBASE_CONFIG || {};
+const DEMO = !CFG.apiKey || CFG.apiKey === 'COLE_AQUI' || typeof firebase === 'undefined';
+
+function firebaseStore() {
+  firebase.initializeApp(CFG);
+  const auth = firebase.auth(), fs = firebase.firestore();
+  fs.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+  const T = fs.collection('tasks');
+  return {
+    onAuth: cb => auth.onAuthStateChanged(u => cb(u ? { uid: u.uid, email: u.email } : null)),
+    signIn: (e, p) => auth.signInWithEmailAndPassword(e, p),
+    signUp: async (e, p) => { const c = await auth.createUserWithEmailAndPassword(e, p); return { uid: c.user.uid, email: c.user.email }; },
+    reset: e => auth.sendPasswordResetEmail(e),
+    signOut: () => auth.signOut(),
+    onUsers: (cb, onErr) => fs.collection('users').onSnapshot(s => { const o = {}; s.forEach(d => o[d.id] = { id: d.id, ...d.data() }); cb(o); }, onErr),
+    onTasks: (cb, onErr) => T.onSnapshot(s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), onErr),
+    onBoard: (cb, onErr) => fs.doc('meta/board').onSnapshot(d => cb(d.exists ? d.data().columns : null), onErr),
+    saveBoard: columns => fs.doc('meta/board').set({ columns }),
+    onClients: (cb, onErr) => fs.doc('meta/clients').onSnapshot(d => cb(d.exists ? d.data().clients : null), onErr),
+    saveClients: clients => fs.doc('meta/clients').set({ clients }),
+    onLabels: (cb, onErr) => fs.doc('meta/labels').onSnapshot(d => cb(d.exists ? d.data().labels : null), onErr),
+    saveLabels: labels => fs.doc('meta/labels').set({ labels }),
+    batchUpdate: async list => { for (let i = 0; i < list.length; i += 400) { const b = fs.batch(); list.slice(i, i + 400).forEach(x => b.update(T.doc(x.id), x.patch)); await b.commit(); } },
+    getUser: async id => { const d = await fs.collection('users').doc(id).get(); return d.exists ? { id, ...d.data() } : null; },
+    saveUser: (id, data) => fs.collection('users').doc(id).set(data, { merge: true }),
+    addTask: t => T.add(t),
+    updateTask: (id, p) => T.doc(id).update(p),
+    restoreTasks: async list => { const b = fs.batch(); list.forEach(({ id, ...t }) => b.set(T.doc(id), t)); await b.commit(); },
+    deleteTasks: async ids => { for (let i = 0; i < ids.length; i += 400) { const b = fs.batch(); ids.slice(i, i + 400).forEach(id => b.delete(T.doc(id))); await b.commit(); } },
+    moveTasks: async (ids, column) => { const b = fs.batch(); ids.forEach(id => b.update(T.doc(id), { column, updatedAt: Date.now() })); await b.commit(); },
+  };
+}
+
+function demoStore() {
+  const KEY = 'bflow-demo-v3';
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };
+  let db = load();
+  if (!db) {
+    db = {
+      session: null, columns: null, labels: null, clients: null,
+      users: {
+        k: { id: 'k', name: 'Kaique', email: 'kaique@exemplo.com', role: 'CEO', photo: '' },
+        ev: { id: 'ev', name: 'Evelyn', email: 'evelyn@exemplo.com', role: 'Organização e posts', photo: '' },
+        em: { id: 'em', name: 'Emily', email: 'emily@exemplo.com', role: 'Edição e análise', photo: '' },
+      },
+      tasks: [
+        { title: 'Roteiro de stories da semana', client: 'Cliente exemplo A', type: 'Stories', column: 'todo', assignee: 'ev', due: dayStr(1), prio: 'alta', checklist: [{ id: uid(), text: 'Ideias', done: true }, { id: uid(), text: 'Textos', done: false }, { id: uid(), text: 'Aprovar com cliente', done: false }] },
+        { title: 'Relatório mensal de anúncios', client: 'Cliente exemplo B', type: 'Relatório', column: 'doing', assignee: 'em', due: dayStr(0), prio: 'alta', checklist: [] },
+        { title: 'Carrossel de lançamento', client: 'belarmino agency', type: 'Post', column: 'review', assignee: 'ev', due: dayStr(2), prio: 'media', checklist: [] },
+        { title: 'Editar Reels do bastidor', client: 'Cliente exemplo A', type: 'Reels', column: 'doing', assignee: 'em', due: dayStr(-1), prio: 'media', checklist: [] },
+        { title: 'Reunião de alinhamento da equipe', client: 'belarmino agency', type: 'Reunião', column: 'done', assignee: 'k', due: dayStr(-2), prio: 'baixa', checklist: [] },
+        { title: 'Ensaio de fotos de produto', client: 'Cliente exemplo C', type: 'Fotos', column: 'todo', assignee: 'k', due: dayStr(5), prio: 'baixa', checklist: [] },
+      ].map((x, i) => ({ id: uid(), desc: '', example: true, createdAt: Date.now() - i * 1e5, createdBy: 'k', ...x })),
+    };
+  }
+  const subs = { auth: [], users: [], tasks: [], board: [], labels: [], clients: [] };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} };
+  const emit = () => { save(); subs.users.forEach(f => f({ ...db.users })); subs.tasks.forEach(f => f(db.tasks.map(t => ({ ...t })))); subs.board.forEach(f => f(db.columns)); subs.labels.forEach(f => f(db.labels)); subs.clients.forEach(f => f(db.clients)); };
+  const sess = () => db.session ? { uid: db.session, email: db.users[db.session]?.email } : null;
+  return {
+    onAuth: cb => { subs.auth.push(cb); setTimeout(() => cb(sess())); return () => {}; },
+    signIn: async e => {
+      const u = Object.values(db.users).find(u => u.email.toLowerCase() === e.toLowerCase());
+      if (!u) throw { code: 'auth/user-not-found' };
+      db.session = u.id; save(); subs.auth.forEach(f => f(sess()));
+    },
+    signUp: async (e, p) => {
+      if (!/\S+@\S+\.\S+/.test(e)) throw { code: 'auth/invalid-email' };
+      if (Object.values(db.users).some(u => u.email.toLowerCase() === e.toLowerCase())) throw { code: 'auth/email-already-in-use' };
+      if ((p || '').length < 6) throw { code: 'auth/weak-password' };
+      const id = uid(); db.users[id] = { id, email: e, name: '', photo: '' }; db.session = id; save();
+      return { uid: id, email: e };
+    },
+    reset: async () => {},
+    signOut: async () => { db.session = null; save(); subs.auth.forEach(f => f(null)); },
+    onUsers: cb => { subs.users.push(cb); setTimeout(() => cb({ ...db.users })); return () => {}; },
+    onTasks: cb => { subs.tasks.push(cb); setTimeout(() => cb(db.tasks.map(t => ({ ...t })))); return () => {}; },
+    onBoard: cb => { subs.board.push(cb); setTimeout(() => cb(db.columns)); return () => {}; },
+    saveBoard: async columns => { db.columns = columns; emit(); },
+    onClients: cb => { subs.clients.push(cb); setTimeout(() => cb(db.clients)); return () => {}; },
+    saveClients: async clients => { db.clients = clients; emit(); },
+    onLabels: cb => { subs.labels.push(cb); setTimeout(() => cb(db.labels)); return () => {}; },
+    saveLabels: async labels => { db.labels = labels; emit(); },
+    batchUpdate: async list => { list.forEach(x => { const t = db.tasks.find(y => y.id === x.id); if (t) Object.assign(t, x.patch); }); emit(); },
+    getUser: async id => db.users[id]?.name ? { ...db.users[id] } : null,
+    saveUser: async (id, data) => { db.users[id] = { ...(db.users[id] || { id }), ...data, id }; emit(); },
+    afterSignUp: () => subs.auth.forEach(f => f(sess())),
+    addTask: async t => { db.tasks.push({ id: uid(), ...t }); emit(); },
+    updateTask: async (id, p) => { const t = db.tasks.find(x => x.id === id); if (t) Object.assign(t, p); emit(); },
+    restoreTasks: async list => { const ids = new Set(list.map(t => t.id)); db.tasks = db.tasks.filter(t => !ids.has(t.id)).concat(list.map(t => ({ ...t }))); emit(); },
+    deleteTasks: async ids => { const s = new Set(ids); db.tasks = db.tasks.filter(x => !s.has(x.id)); emit(); },
+    moveTasks: async (ids, column) => { db.tasks.forEach(t => { if (ids.includes(t.id)) t.column = column; }); emit(); },
+  };
+}
+
+const store = DEMO ? demoStore() : firebaseStore();
+
+/* =========================================================
+   Estado
+   ========================================================= */
+const S = {
+  me: null, profile: null, users: {}, tasks: [], columns: DEFAULT_COLS, labels: DEFAULT_LABELS, label: '', clientsMeta: [], clientOpen: '*', lastPeriod: '', clock: 0,
+  view: 'home', who: 'all', client: '', quick: '', q: '', col: 'todo',
+  showFilters: false, selecting: false, selected: new Set(), authTab: 'in', unsub: [],
+};
+try { const p = JSON.parse(localStorage.getItem('bflow-prefs') || '{}'); Object.assign(S, { who: p.who || 'all', view: ['home', 'clients', 'client', 'team'].includes(p.view) ? p.view : 'home', col: p.col || 'todo', clientOpen: p.clientOpen || '*' }); } catch {}
+const savePrefs = () => { try { localStorage.setItem('bflow-prefs', JSON.stringify({ who: S.who, view: S.view, col: S.col, clientOpen: S.clientOpen })); } catch {} };
+const colById = id => S.columns.find(c => c.id === id) || S.columns[0];
+// Etiquetas da tarefa (tarefas antigas com "tipo" viram a etiqueta de mesmo nome)
+function taskLabelIds(t) {
+  if (Array.isArray(t.labels)) return t.labels.filter(id => S.labels.some(l => l.id === id));
+  const m = t.type && S.labels.find(l => l.name.toLowerCase() === t.type.toLowerCase());
+  return m ? [m.id] : [];
+}
+const labelById = id => S.labels.find(l => l.id === id);
+
+/* =========================================================
+   Login, cadastro e perfil
+   ========================================================= */
+function renderAuth(error = '') {
+  const up = S.authTab === 'up';
+  $('#root').innerHTML = `
+  <main class="auth"><div class="auth-box">
+    <div class="brand"><div class="logo">b</div><div class="brand-name">belarmino flow<small>organizador da equipe belarmino agency</small></div></div>
+    <h1>Marcas reais.<br><em>Tarefas em dia.</em></h1>
+    <form class="card-form" id="authForm" novalidate>
+      ${DEMO ? '<span class="demo-tag">Modo demonstração</span>' : ''}
+      <div class="seg" role="tablist">
+        <button type="button" role="tab" aria-selected="${!up}" data-tab="in">Entrar</button>
+        <button type="button" role="tab" aria-selected="${up}" data-tab="up">Criar conta</button>
+      </div>
+      ${error ? `<div class="err" role="alert">${esc(error)}</div>` : ''}
+      <div class="field"><label for="aEmail">E-mail</label><input class="input" id="aEmail" type="email" autocomplete="email" required value="${DEMO && !up ? 'kaique@exemplo.com' : ''}"></div>
+      <div class="field"><label for="aPass">Senha</label><input class="input" id="aPass" type="password" autocomplete="${up ? 'new-password' : 'current-password'}" required minlength="6" value="${DEMO && !up ? '123456' : ''}"></div>
+      <button class="btn btn-primary" id="aGo">${up ? 'Criar conta' : 'Entrar'}</button>
+      ${up ? '<p class="note">Depois você escolhe seu nome e sua foto de perfil.</p>' : '<button type="button" class="link" id="aReset">Esqueci a senha</button>'}
+      ${DEMO ? '<p class="note">Teste com kaique@, evelyn@ ou emily@exemplo.com (qualquer senha). Os dados ficam só neste aparelho até o app ser ligado ao Firebase.</p>' : ''}
+    </form>
+  </div></main>`;
+  $$('[data-tab]').forEach(b => b.onclick = () => { S.authTab = b.dataset.tab; renderAuth(); });
+  $('#aReset')?.addEventListener('click', async () => {
+    const e = $('#aEmail').value.trim();
+    if (!e) return renderAuth('Digite seu e-mail acima e toque em "Esqueci a senha" de novo.');
+    try { await store.reset(e); toast('Enviamos um link de nova senha para ' + e); } catch (er) { renderAuth(errMsg(er)); }
+  });
+  $('#authForm').onsubmit = async ev => {
+    ev.preventDefault();
+    const e = $('#aEmail').value.trim(), p = $('#aPass').value, btn = $('#aGo');
+    btn.disabled = true; btn.textContent = 'Aguarde…';
+    try {
+      if (S.authTab === 'up') { const u = await store.signUp(e, p); S.me = u; renderProfileSetup(); store.afterSignUp?.(); }
+      else await store.signIn(e, p);
+    } catch (er) { renderAuth(errMsg(er)); }
+  };
+}
+
+function profileFields(p = {}) {
+  return `
+  <div class="photo-pick">
+    <span id="pPrev">${avatar({ name: p.name || '?', photo: p.photo }, 'lg')}</span>
+    <div style="display:grid;gap:6px;justify-items:start">
+      <label class="btn btn-lime" for="pPhoto" style="padding:8px 14px;min-height:40px">Escolher foto</label>
+      <input id="pPhoto" type="file" accept="image/*" hidden>
+      <button type="button" class="link" id="pRemove" ${p.photo ? '' : 'hidden'}>Remover foto</button>
+    </div>
+  </div>
+  <div class="field"><label for="pName">Nome de usuário</label><input class="input" id="pName" maxlength="40" value="${esc(p.name || '')}" placeholder="Como a equipe vai te ver" required></div>
+  <div class="field"><label for="pRole">Função na agência</label><input class="input" id="pRole" maxlength="50" value="${esc(p.role || '')}" placeholder="Ex.: Social media, Edição, Tráfego"></div>`;
+}
+function bindProfileFields(st) {
+  const prev = () => { $('#pPrev').innerHTML = avatar({ name: $('#pName').value || '?', photo: st.photo }, 'lg'); $('#pRemove').hidden = !st.photo; };
+  $('#pPhoto').onchange = async e => { const f = e.target.files[0]; if (!f) return; try { st.photo = await resizeImage(f); prev(); } catch (er) { toast(er.message); } };
+  $('#pName').oninput = prev;
+  $('#pRemove').onclick = () => { st.photo = ''; prev(); };
+}
+
+function renderProfileSetup() {
+  const st = { photo: '' };
+  $('#root').innerHTML = `
+  <main class="auth"><div class="auth-box">
+    <div class="brand"><div class="logo">b</div><div class="brand-name">Seu perfil<small>${esc(S.me?.email || '')}</small></div></div>
+    <form class="card-form" id="pf" novalidate>
+      <div id="pErr"></div>
+      ${profileFields()}
+      <button class="btn btn-primary" id="pGo">Entrar no quadro</button>
+    </form>
+  </div></main>`;
+  bindProfileFields(st);
+  $('#pf').onsubmit = async ev => {
+    ev.preventDefault();
+    const name = $('#pName').value.trim();
+    if (!name) { $('#pErr').innerHTML = '<div class="err">Escolha um nome de usuário para continuar.</div>'; return; }
+    $('#pGo').disabled = true;
+    try {
+      const data = { name, role: $('#pRole').value.trim(), photo: st.photo, email: S.me.email, createdAt: Date.now() };
+      await store.saveUser(S.me.uid, data);
+      S.profile = { id: S.me.uid, ...data }; startApp();
+    } catch (er) { $('#pGo').disabled = false; $('#pErr').innerHTML = `<div class="err">${esc(errMsg(er))}</div>`; }
+  };
+}
+
+/* =========================================================
+   App
+   ========================================================= */
+function startApp() {
+  S.unsub.forEach(f => f && f()); S.unsub = [];
+  const onErr = e => toast(errMsg(e));
+  S.unsub.push(store.onUsers(u => { S.users = u; if (u[S.me.uid]?.name) S.profile = u[S.me.uid]; render(); }, onErr));
+  S.unsub.push(store.onTasks(t => { S.tasks = t; [...S.selected].forEach(id => { if (!t.some(x => x.id === id)) S.selected.delete(id); }); render(); }, onErr));
+  S.unsub.push(store.onLabels(l => { S.labels = Array.isArray(l) ? l : DEFAULT_LABELS; if (S.label && !labelById(S.label)) S.label = ''; render(); }, onErr));
+  S.unsub.push(store.onClients(c => { S.clientsMeta = Array.isArray(c) ? c : []; render(); }, onErr));
+  S.unsub.push(store.onBoard(c => { S.columns = c && c.length ? c : DEFAULT_COLS; if (!S.columns.some(x => x.id === S.col)) S.col = S.columns[0].id; render(); }, onErr));
+  render();
+  clearInterval(S.clock);
+  S.clock = setInterval(() => { const p = period(); if (p !== S.lastPeriod && S.view === 'home' && !$('#sheet')) render(); }, 60000);
+}
+
+const isOpen = t => t.column !== 'done' && colById(t.column).id !== 'done';
+const doneColId = () => (S.columns.find(c => c.id === 'done') || S.columns[S.columns.length - 1]).id;
+function sortTasks(a, b) {
+  return (PRIO_ORDER[a.prio] ?? 1) - (PRIO_ORDER[b.prio] ?? 1) || (a.due || '9999').localeCompare(b.due || '9999') || (a.createdAt || 0) - (b.createdAt || 0);
+}
+const byDue = (a, b) => (a.due || '9999').localeCompare(b.due || '9999') || (PRIO_ORDER[a.prio] ?? 1) - (PRIO_ORDER[b.prio] ?? 1);
+const teamList = () => Object.values(S.users).filter(u => u.name).sort((a, b) => a.name.localeCompare(b.name));
+
+/* ---------- Clientes ---------- */
+function hashColor(name) { const k = Object.keys(LABEL_COLORS); let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return k[h % k.length]; }
+function clientList() {
+  const list = S.clientsMeta.map(c => ({ ...c }));
+  const names = new Set(list.map(c => c.name.toLowerCase()));
+  S.tasks.forEach(t => { if (t.client && !names.has(t.client.toLowerCase())) { names.add(t.client.toLowerCase()); list.push({ id: 'n:' + t.client, name: t.client, color: hashColor(t.client), implicit: true }); } });
+  return list.sort((a, b) => a.name.localeCompare(b.name));
+}
+const clients = () => clientList().map(c => c.name);
+const clientByName = n => clientList().find(c => c.name.toLowerCase() === (n || '').toLowerCase());
+const sameClient = (t, name) => (t.client || '').toLowerCase() === (name || '').toLowerCase();
+const clientInitials = n => n.replace(/[^\p{L}\p{N} ]/gu, '').trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() || '?';
+
+/* ---------- Frases do dia ---------- */
+function period() { const h = new Date().getHours(); return h >= 5 && h < 12 ? 'manha' : h >= 12 && h < 18 ? 'tarde' : 'noite'; }
+function phraseNow() {
+  const p = period(), list = PHRASES[p], d = new Date();
+  const day = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
+  return { p, text: list[(day * 7 + { manha: 0, tarde: 3, noite: 5 }[p]) % list.length] };
+}
+
+/* ---------- Filtro do quadro ---------- */
+function scopeTasks() {
+  if (S.view !== 'client' || S.clientOpen === '*') return S.tasks;
+  if (S.clientOpen === '__none') return S.tasks.filter(t => !t.client);
+  return S.tasks.filter(t => sameClient(t, S.clientOpen));
+}
+function visibleTasks() {
+  let t = scopeTasks();
+  if (S.who === 'me') t = t.filter(x => x.assignee === S.me.uid);
+  else if (S.who !== 'all') t = t.filter(x => x.assignee === S.who);
+  if (S.client && S.clientOpen === '*') t = t.filter(x => sameClient(x, S.client));
+  if (S.label) t = t.filter(x => taskLabelIds(x).includes(S.label));
+  if (S.q) { const q = S.q.toLowerCase(); t = t.filter(x => [x.title, x.client, x.desc, ...taskLabelIds(x).map(id => labelById(id)?.name)].join(' ').toLowerCase().includes(q)); }
+  return t;
+}
+
+/* =========================================================
+   Render
+   ========================================================= */
+function render() {
+  if (!S.me || !S.profile) return;
+  const focusId = document.activeElement?.id, caret = document.activeElement?.selectionStart;
+  const boardScroll = $('.board')?.scrollLeft || 0;
+  const tab = S.view === 'client' ? 'clients' : S.view;
+  const views = { home: homeHTML, clients: clientsHTML, client: clientPageHTML, team: teamHTML };
+  if (!views[S.view]) S.view = 'home';
+  $('#root').innerHTML = `
+  <div class="app">
+    <header class="top">
+      <div class="top-row">
+        <div class="logo">b</div>
+        <div class="top-title"><b>belarmino flow</b><span>belarmino agency</span></div>
+        <button class="me-btn" id="meBtn" aria-label="Menu e perfil">${avatar(S.profile)}</button>
+      </div>
+      <nav class="nav" role="tablist" aria-label="Seções">
+        <button role="tab" aria-selected="${tab === 'home'}" data-view="home">${ICON.home}<span>Início</span></button>
+        <button role="tab" aria-selected="${tab === 'clients'}" data-view="clients">${ICON.briefcase}<span>Clientes</span></button>
+        <button role="tab" aria-selected="${tab === 'team'}" data-view="team">${ICON.users}<span>Equipe</span></button>
+      </nav>
+    </header>
+    ${views[S.view]()}
+  </div>
+  ${S.selecting ? selbarHTML() : `<button class="fab" id="fab">${ICON.plus} Nova tarefa</button>`}`;
+  if ($('.board')) $('.board').scrollLeft = boardScroll;
+  bindApp();
+  if (focusId && document.getElementById(focusId)) { const el = document.getElementById(focusId); el.focus(); if (caret != null && el.setSelectionRange) try { el.setSelectionRange(caret, caret); } catch {} }
+}
+
+/* ---------- Início ---------- */
+function homeHTML() {
+  const today = dayStr(), ph = phraseNow(); S.lastPeriod = ph.p;
+  const first = (S.profile.name || '').trim().split(/\s+/)[0];
+  const greet = { manha: 'Bom dia', tarde: 'Boa tarde', noite: 'Boa noite' }[ph.p];
+  const icon = { manha: ICON.sun, tarde: ICON.sunset, noite: ICON.moon }[ph.p];
+  const label = { manha: 'Frase da manhã', tarde: 'Frase da tarde', noite: 'Frase da noite' }[ph.p];
+  let dateTxt = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }); dateTxt = dateTxt[0].toUpperCase() + dateTxt.slice(1);
+  const examples = S.tasks.filter(t => t.example).length;
+  const open = S.tasks.filter(isOpen);
+  const late = open.filter(t => t.due && t.due < today), tod = open.filter(t => t.due === today);
+  const review = S.tasks.filter(t => colById(t.column).id === 'review');
+  const mine = open.filter(t => t.assignee === S.me.uid).sort(byDue);
+  const groups = [
+    ['Atrasadas', 'late', mine.filter(t => t.due && t.due < today)],
+    ['Hoje', '', mine.filter(t => t.due === today)],
+    ['Próximos dias', '', mine.filter(t => t.due > today && t.due <= dayStr(7))],
+    ['Mais pra frente', '', mine.filter(t => t.due > dayStr(7))],
+    ['Sem prazo', '', mine.filter(t => !t.due)],
+  ].filter(g => g[2].length);
+  return `<div class="wrap home">
+    <section class="hello">
+      <div class="hello-top">${icon}<span>${esc(dateTxt)}</span></div>
+      <h1>${greet}, ${esc(first)}!</h1>
+      <div class="phrase-box"><span class="phrase-tag">${label}</span><p class="phrase">${esc(ph.text)}</p></div>
+    </section>
+    ${examples ? `<div class="banner"><p><b>O app está com tarefas de exemplo.</b>Apague quando quiser começar a usar de verdade.</p><button class="btn btn-primary" id="clearEx">${ICON.trash} Apagar ${plural(examples, 'exemplo', 'exemplos')}</button></div>` : ''}
+    <div class="sec-head"><h2>Equipe hoje</h2></div>
+    <div class="summary">
+      <button class="stat late" data-quicklist="late"><b>${late.length}</b><span>Atrasadas</span></button>
+      <button class="stat" data-quicklist="today"><b>${tod.length}</b><span>Para hoje</span></button>
+      <button class="stat" data-quicklist="review"><b>${review.length}</b><span>Em aprovação</span></button>
+    </div>
+    <div class="sec-head"><h2>Suas tarefas</h2><span class="count">${mine.length}</span></div>
+    ${groups.length ? groups.map(([n, cls, list]) => `<h3 class="grp ${cls}">${n}</h3><div class="rlist">${list.map(rowHTML).join('')}</div>`).join('')
+      : `<div class="empty big">${ICON.check}<b>Tudo em dia por aqui.</b><span>Nenhuma tarefa aberta no seu nome. Crie uma em "Nova tarefa" ou veja os quadros em Clientes.</span></div>`}
+  </div>`;
+}
+function rowHTML(t) {
+  const today = dayStr(), open = isOpen(t);
+  const cls = open && t.due && t.due < today ? 'late' : open && t.due === today ? 'today' : '';
+  const due = t.due ? (t.due === today ? 'Hoje' : t.due === dayStr(1) ? 'Amanhã' : fmtDate(t.due)) : '';
+  const col = colById(t.column);
+  return `<div class="rt">
+    <button class="done-btn" data-done="${esc(t.id)}" aria-label="Concluir ${esc(t.title)}"><span class="circ">${ICON.check}</span></button>
+    <button class="rt-main" data-open="${esc(t.id)}">
+      <b>${esc(t.title)}</b>
+      <span>${[t.client && esc(t.client), esc(col.name), due && `<em class="${cls}">${due}</em>`].filter(Boolean).join(' · ')}</span>
+    </button>
+    ${t.prio === 'alta' ? '<span class="urgent" style="margin-right:10px">Urgente</span>' : ''}
+  </div>`;
+}
+function openListSheet(kind) {
+  const today = dayStr(), open = S.tasks.filter(isOpen);
+  const map = {
+    late: ['Atrasadas', open.filter(t => t.due && t.due < today)],
+    today: ['Para hoje', open.filter(t => t.due === today)],
+    review: ['Em aprovação', S.tasks.filter(t => colById(t.column).id === 'review')],
+  };
+  const [title, list] = map[kind];
+  openSheet(`
+    <div class="sheet-head"><h3>${title} · equipe</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    ${list.length ? `<div class="rlist">${list.sort(byDue).map(t => `<div class="rt"><span style="padding:0 4px 0 10px">${avatar(S.users[t.assignee])}</span>${rowHTML(t).replace(/^<div class="rt">\s*<button class="done-btn"[\s\S]*?<\/button>/, '').replace(/<\/div>$/, '')}</div>`).join('')}</div>` : '<p class="meta-line">Nenhuma tarefa aqui. Tudo certo!</p>'}`);
+  $$('#sheet [data-open]').forEach(b => b.onclick = () => openTask(S.tasks.find(t => t.id === b.dataset.open)));
+}
+
+/* ---------- Clientes ---------- */
+function clientStats(list) {
+  const today = dayStr(), open = list.filter(isOpen);
+  const late = open.filter(t => t.due && t.due < today).length;
+  return `${plural(open.length, 'aberta', 'abertas')}${late ? ` · <span class="late">${plural(late, 'atrasada', 'atrasadas')}</span>` : ''}`;
+}
+function clientsHTML() {
+  const cl = clientList(), noClient = S.tasks.filter(t => !t.client);
+  return `<div class="wrap clients">
+    <div class="sec-head"><h2>Clientes</h2><button class="btn btn-soft" id="newClient">${ICON.plus} Novo cliente</button></div>
+    <div class="cgrid">
+      <button class="ccard all" data-client-open="*"><span class="cmark">${ICON.cols}</span><span class="cinfo"><span class="cname">Quadro geral</span><span class="csub">Todas as tarefas · ${clientStats(S.tasks)}</span></span>${ICON.chev}</button>
+    </div>
+    <h3 class="grp">${plural(cl.length, 'cliente', 'clientes')}</h3>
+    ${cl.length ? `<div class="cgrid">${cl.map(c => `<button class="ccard" data-client-open="${esc(c.name)}"><span class="cmark" style="${lblStyle(c.color)}">${esc(clientInitials(c.name))}</span><span class="cinfo"><span class="cname">${esc(c.name)}</span><span class="csub">${clientStats(S.tasks.filter(t => sameClient(t, c.name)))}</span></span>${ICON.chev}</button>`).join('')}</div>`
+      : '<div class="empty big"><b>Nenhum cliente ainda.</b><span>Toque em "Novo cliente" para criar o primeiro.</span></div>'}
+    ${noClient.length ? `<div class="cgrid" style="margin-top:10px"><button class="ccard" data-client-open="__none"><span class="cmark" style="${lblStyle('gray')}">–</span><span class="cinfo"><span class="cname">Sem cliente</span><span class="csub">Tarefas internas · ${clientStats(noClient)}</span></span>${ICON.chev}</button></div>` : ''}
+  </div>`;
+}
+function clientPageHTML() {
+  const k = S.clientOpen, c = k === '*' ? null : k === '__none' ? null : clientByName(k);
+  if (k !== '*' && k !== '__none' && !c) { S.view = 'clients'; return clientsHTML(); }
+  const name = k === '*' ? 'Quadro geral' : k === '__none' ? 'Sem cliente' : c.name;
+  const mark = k === '*' ? `<span class="cmark" style="background:var(--indigo);color:#fff">${ICON.cols}</span>` : `<span class="cmark" style="${lblStyle(c ? c.color : 'gray')}">${c ? esc(clientInitials(c.name)) : '–'}</span>`;
+  return `<div class="wrap">
+    <div class="chead">
+      <button class="back" id="back" aria-label="Voltar para clientes">${ICON.back}</button>
+      ${mark}
+      <div class="chead-t"><h1>${esc(name)}</h1><span>${clientStats(scopeTasks())}</span></div>
+      ${c ? `<button class="more" id="clientMenu" aria-label="Opções do cliente">${ICON.dots}</button>` : ''}
+    </div>
+  </div>
+  ${boardHTML()}`;
+}
+
+function boardHTML() {
+  const vt = visibleTasks(), all = S.clientOpen === '*';
+  const nFilters = (S.who !== 'all') + (all && !!S.client) + !!S.label;
+  const users = teamList();
+  const activeCol = colById(S.col);
+  const filterPills = [
+    S.who !== 'all' && { k: 'who', t: S.who === 'me' ? 'Só minhas' : 'De ' + (S.users[S.who]?.name || '…') },
+    all && S.client && { k: 'client', t: 'Cliente: ' + S.client },
+    S.label && { k: 'label', t: 'Etiqueta: ' + (labelById(S.label)?.name || '') },
+    S.q && { k: 'q', t: `Busca: "${S.q}"` },
+  ].filter(Boolean);
+  return `
+  <div class="wrap">
+    <div class="tools">
+      <label class="search">${ICON.search}<input class="input" id="q" type="search" placeholder="Buscar neste quadro" value="${esc(S.q)}" aria-label="Buscar"></label>
+      <button class="icon-btn" id="tFilters" aria-pressed="${S.showFilters}">${ICON.filter}<span class="sel-label">Filtros</span>${nFilters ? ` <span class="badge">${nFilters}</span>` : ''}</button>
+      <button class="icon-btn" id="tSelect" aria-pressed="${S.selecting}" title="Selecionar várias">${ICON.select}<span class="sel-label">Selecionar</span></button>
+    </div>
+    ${S.showFilters ? `
+    <div class="chips" aria-label="Responsável">
+      <button class="chip plain" aria-pressed="${S.who === 'all'}" data-who="all">Todos</button>
+      <button class="chip plain" aria-pressed="${S.who === 'me'}" data-who="me">Só minhas</button>
+      ${users.filter(u => u.id !== S.me.uid).map(u => `<button class="chip" aria-pressed="${S.who === u.id}" data-who="${esc(u.id)}">${avatar(u)}${esc(u.name)}</button>`).join('')}
+    </div>
+    ${all ? `<div class="chips" aria-label="Cliente">
+      <button class="chip plain" aria-pressed="${!S.client}" data-client="">Todos os clientes</button>
+      ${clients().map(c => `<button class="chip plain" aria-pressed="${S.client === c}" data-client="${esc(c)}">${esc(c)}</button>`).join('')}
+    </div>` : ''}
+    <div class="chips" aria-label="Etiqueta">
+      <button class="chip plain" aria-pressed="${!S.label}" data-label="">Todas as etiquetas</button>
+      ${S.labels.map(l => `<button class="chip plain" aria-pressed="${S.label === l.id}" data-label="${esc(l.id)}"><span class="dot" style="background:${(LABEL_COLORS[l.color] || LABEL_COLORS.gray).bg}"></span>${esc(l.name)}</button>`).join('')}
+    </div>` : ''}
+    ${filterPills.length ? `<div class="active-filters">Mostrando: ${filterPills.map(p => `<button class="pill" data-clear="${p.k}" aria-label="Remover filtro ${esc(p.t)}">${esc(p.t)}${ICON.x}</button>`).join('')}</div>` : ''}
+    <div class="coltabs" role="tablist" aria-label="Etapas">
+      ${S.columns.map(c => `<button class="coltab" role="tab" aria-selected="${c.id === activeCol.id}" data-coltab="${esc(c.id)}"><span class="dot" style="background:${COLORS[c.color] || COLORS.sky}"></span>${esc(c.name)}<span class="n">${vt.filter(t => colById(t.column).id === c.id).length}</span></button>`).join('')}
+    </div>
+  </div>
+  <section class="board">
+    ${S.columns.map(c => {
+      const list = vt.filter(t => colById(t.column).id === c.id).sort(sortTasks);
+      return `<div class="col ${c.id === activeCol.id ? 'active' : ''}" data-col="${esc(c.id)}">
+        <div class="col-head"><span class="dot" style="background:${COLORS[c.color] || COLORS.sky}"></span><h2>${esc(c.name)}</h2><span class="count">${list.length}</span><button class="more" data-colmenu="${esc(c.id)}" aria-label="Opções da coluna ${esc(c.name)}">${ICON.dots}</button></div>
+        <div class="col-body">${list.length ? list.map(taskHTML).join('') : `<div class="empty">${filterPills.length ? 'Nenhuma tarefa com esses filtros' : 'Nenhuma tarefa aqui'}</div>`}</div>
+        <button class="add-in-col" data-add="${esc(c.id)}">${ICON.plus} Adicionar tarefa</button>
+      </div>`;
+    }).join('')}
+    <button class="add-col" id="addCol">${ICON.plus} Nova coluna</button>
+  </section>`;
+}
+
+function taskHTML(t) {
+  const today = dayStr(), u = S.users[t.assignee];
+  const ck = t.checklist || [], doneCk = ck.filter(x => x.done).length;
+  let dueCls = '', dueTxt = '';
+  if (t.due) {
+    const open = isOpen(t);
+    dueCls = open && t.due < today ? 'late' : open && t.due === today ? 'today' : '';
+    dueTxt = dueCls === 'late' ? 'Atrasada · ' + fmtDate(t.due) : t.due === today ? 'Hoje' : t.due === dayStr(1) ? 'Amanhã' : fmtDate(t.due);
+  }
+  const sub = t.client && S.clientOpen === '*' ? esc(t.client) : '';
+  const lbls = taskLabelIds(t).map(labelById);
+  const sel = S.selected.has(t.id);
+  return `<div class="task ${sel ? 'selected' : ''}" draggable="${!S.selecting}" data-task="${esc(t.id)}">
+    ${S.selecting ? `<span class="sel-box" aria-hidden="true">${ICON.check}</span>` : ''}
+    <button class="task-main" data-open="${esc(t.id)}" ${S.selecting ? `aria-pressed="${sel}"` : ''}>
+      ${lbls.length ? `<span class="labels">${lbls.map(l => `<span class="lbl" style="${lblStyle(l.color)}">${esc(l.name)}</span>`).join('')}</span>` : ''}
+      <span class="task-title">${esc(t.title)}</span>
+      ${sub ? `<span class="task-sub">${sub}</span>` : ''}
+      <span class="task-meta">
+        ${t.prio === 'alta' ? '<span class="urgent">Urgente</span>' : ''}
+        ${dueTxt ? `<span class="meta ${dueCls}">${ICON.cal}${dueTxt}</span>` : ''}
+        ${ck.length ? `<span class="meta ${doneCk === ck.length ? 'allok' : ''}">${ICON.check}${doneCk}/${ck.length}</span>` : ''}
+        <span class="grow"></span>
+        ${avatar(u)}
+      </span>
+    </button>
+    ${S.selecting ? '' : `<button class="more" data-taskmenu="${esc(t.id)}" aria-label="Opções da tarefa">${ICON.dots}</button>`}
+  </div>`;
+}
+
+function selbarHTML() {
+  const n = S.selected.size;
+  return `<div class="selbar"><span>${n ? plural(n, 'selecionada', 'selecionadas') : 'Toque nas tarefas'}</span>
+    <button class="btn btn-ghost" id="selCancel">Cancelar</button>
+    <button class="btn btn-lime" id="selMove" ${n ? '' : 'disabled'}>${ICON.move} Mover</button>
+    <button class="btn btn-danger-solid" id="selDel" ${n ? '' : 'disabled'}>${ICON.trash} Excluir</button></div>`;
+}
+
+function teamHTML() {
+  const today = dayStr(), users = teamList();
+  const rows = users.map(u => {
+    const t = S.tasks.filter(x => x.assignee === u.id), open = t.filter(isOpen);
+    const late = open.filter(x => x.due && x.due < today).length;
+    const rev = t.filter(x => colById(x.column).id === 'review').length;
+    return `<div class="member">${avatar(u)}<div class="member-info"><div class="member-name">${esc(u.name)}${u.id === S.me.uid ? ' (você)' : ''}</div><div class="member-sub">${esc(u.role || u.email || '')}</div></div>
+      <div class="stats"><div><b>${open.length}</b><span>abertas</span></div><div><b>${rev}</b><span>aprovação</span></div><div class="${late ? 'late' : ''}"><b>${late}</b><span>atrasadas</span></div></div></div>`;
+  }).join('');
+  const none = S.tasks.filter(t => !t.assignee && isOpen(t)).length;
+  return `<div class="wrap"><section class="team">
+    <div class="sec-head" style="margin-top:6px"><h2>Equipe</h2><span class="count">${users.length}</span></div>
+    ${rows}
+    ${none ? `<p class="meta-line">${plural(none, 'tarefa aberta está', 'tarefas abertas estão')} sem responsável.</p>` : ''}
+    <p class="meta-line">Para entrar na equipe, a pessoa abre o app, toca em "Criar conta" e escolhe nome e foto.</p>
+  </section></div>`;
+}
+
+function bindApp() {
+  $$('[data-view]').forEach(b => b.onclick = () => { S.view = b.dataset.view; S.q = ''; exitSelect(false); savePrefs(); render(); window.scrollTo(0, 0); });
+  $('#meBtn').onclick = openMenu;
+  $('#fab')?.addEventListener('click', () => openTask(null, S.view === 'client' ? S.col : S.columns[0].id));
+  $('#clearEx')?.addEventListener('click', clearExamples);
+  $$('[data-quicklist]').forEach(b => b.onclick = () => openListSheet(b.dataset.quicklist));
+  $$('[data-done]').forEach(b => b.onclick = () => completeTask(b.dataset.done));
+  $('#newClient')?.addEventListener('click', () => openClient(null));
+  $$('[data-client-open]').forEach(b => b.onclick = () => { S.clientOpen = b.dataset.clientOpen; S.view = 'client'; S.q = ''; S.client = ''; savePrefs(); render(); window.scrollTo(0, 0); });
+  $('#back')?.addEventListener('click', () => { S.view = 'clients'; exitSelect(false); savePrefs(); render(); });
+  $('#clientMenu')?.addEventListener('click', () => openClientMenu(clientByName(S.clientOpen)));
+  let qT; $('#q')?.addEventListener('input', e => { clearTimeout(qT); qT = setTimeout(() => { S.q = e.target.value.trim(); render(); }, 200); });
+  $('#tFilters')?.addEventListener('click', () => { S.showFilters = !S.showFilters; render(); });
+  $('#tSelect')?.addEventListener('click', () => { S.selecting ? exitSelect() : (S.selecting = true, render()); });
+  $$('[data-who]').forEach(b => b.onclick = () => { S.who = b.dataset.who; savePrefs(); render(); });
+  $$('[data-client]').forEach(b => b.onclick = () => { S.client = b.dataset.client; render(); });
+  $$('[data-label]').forEach(b => b.onclick = () => { S.label = b.dataset.label; render(); });
+  $$('[data-clear]').forEach(b => b.onclick = () => { const k = b.dataset.clear; if (k === 'who') S.who = 'all'; else S[k] = ''; savePrefs(); render(); });
+  $$('[data-coltab]').forEach(b => b.onclick = () => { S.col = b.dataset.coltab; savePrefs(); render(); });
+  $$('[data-add]').forEach(b => b.onclick = () => openTask(null, b.dataset.add));
+  $('#addCol')?.addEventListener('click', () => openColumn(null));
+  $$('[data-colmenu]').forEach(b => b.onclick = () => openColumnMenu(b.dataset.colmenu));
+  $$('[data-taskmenu]').forEach(b => b.onclick = () => openTaskMenu(b.dataset.taskmenu));
+  $$('[data-open]').forEach(b => b.onclick = () => {
+    const id = b.dataset.open;
+    if (S.selecting) { S.selected.has(id) ? S.selected.delete(id) : S.selected.add(id); render(); }
+    else openTask(S.tasks.find(t => t.id === id));
+  });
+  $$('.task[draggable="true"]').forEach(el => {
+    el.ondragstart = e => { e.dataTransfer.setData('text/plain', el.dataset.task); el.classList.add('dragging'); };
+    el.ondragend = () => el.classList.remove('dragging');
+  });
+  $$('[data-col]').forEach(col => {
+    col.ondragover = e => { e.preventDefault(); col.classList.add('over'); };
+    col.ondragleave = () => col.classList.remove('over');
+    col.ondrop = e => { e.preventDefault(); col.classList.remove('over'); const t = S.tasks.find(x => x.id === e.dataTransfer.getData('text/plain')); if (t && colById(t.column).id !== col.dataset.col) moveTasks([t.id], col.dataset.col); };
+  });
+  $('#selCancel')?.addEventListener('click', () => exitSelect());
+  $('#selDel')?.addEventListener('click', () => deleteTasks([...S.selected], true));
+  $('#selMove')?.addEventListener('click', () => openMoveSheet([...S.selected]));
+}
+async function completeTask(id) {
+  const t = S.tasks.find(x => x.id === id); if (!t) return;
+  const from = t.column;
+  try {
+    await store.moveTasks([id], doneColId());
+    toast('Tarefa concluída', { label: 'Desfazer', run: () => store.moveTasks([id], from) });
+  } catch (e) { toast(errMsg(e)); }
+}
+
+/* ---------- Editar / excluir cliente ---------- */
+function openClient(c, after) {
+  const isNew = !c, keys = Object.keys(LABEL_COLORS);
+  const st = { color: c?.color || keys[(S.clientsMeta.length + 2) % keys.length] };
+  openSheet(`
+    <div class="sheet-head"><h3>${isNew ? 'Novo cliente' : 'Editar cliente'}</h3><button class="x" id="ceX" aria-label="Fechar">${ICON.x}</button></div>
+    <div id="ceErr"></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="cmark" id="cePrev" style="${lblStyle(st.color)}">${esc(c ? clientInitials(c.name) : '?')}</span><span class="meta-line">Assim o cliente aparece na lista.</span></div>
+    <div class="field"><label for="ceName">Nome do cliente</label><input class="input" id="ceName" maxlength="50" value="${esc(c?.name || '')}" placeholder="Ex.: Divino Brownie"></div>
+    <div class="field"><label>Cor</label><div class="colors">${keys.map(k => `<button type="button" data-cc="${k}" aria-pressed="${st.color === k}" style="background:${LABEL_COLORS[k].bg};color:${LABEL_COLORS[k].fg}" aria-label="${LABEL_COLORS[k].name}" title="${LABEL_COLORS[k].name}">Aa</button>`).join('')}</div></div>
+    <div class="actions"><div class="right"><button class="btn btn-ghost" id="ceCancel">Cancelar</button><button class="btn btn-primary" id="ceSave">${isNew ? 'Criar cliente' : 'Salvar'}</button></div></div>`);
+  const prev = () => { const p = $('#cePrev'); p.textContent = clientInitials($('#ceName').value || '?'); p.setAttribute('style', lblStyle(st.color)); };
+  $$('[data-cc]').forEach(b => b.onclick = () => { st.color = b.dataset.cc; $$('[data-cc]').forEach(x => x.setAttribute('aria-pressed', x === b)); prev(); });
+  $('#ceName').oninput = prev;
+  setTimeout(() => $('#ceName').focus(), 50);
+  const leave = () => after ? after(null) : closeSheet();
+  $('#ceX').onclick = $('#ceCancel').onclick = leave;
+  const save = async () => {
+    const name = $('#ceName').value.trim();
+    if (!name) { $('#ceErr').innerHTML = '<div class="err">Escreva o nome do cliente.</div>'; return; }
+    const dup = clientByName(name);
+    if (dup && (!c || dup.name.toLowerCase() !== c.name.toLowerCase())) { $('#ceErr').innerHTML = '<div class="err">Já existe um cliente com esse nome.</div>'; return; }
+    try {
+      const meta = S.clientsMeta.filter(x => !c || x.id !== c.id);
+      const nc = { id: c && !c.implicit ? c.id : 'c' + uid(), name, color: st.color };
+      meta.push(nc);
+      if (c && c.name !== name) {
+        const hit = S.tasks.filter(t => sameClient(t, c.name));
+        if (hit.length) await store.batchUpdate(hit.map(t => ({ id: t.id, patch: { client: name } })));
+        if (S.clientOpen === c.name) S.clientOpen = name;
+      }
+      await store.saveClients(meta); S.clientsMeta = meta;
+      toast(isNew ? 'Cliente criado' : 'Cliente salvo');
+      after ? after(nc) : (closeSheet(), render());
+    } catch (e) { toast(errMsg(e)); }
+  };
+  $('#ceSave').onclick = save;
+  $('#ceName').onkeydown = e => { if (e.key === 'Enter') save(); };
+}
+function openClientMenu(c) {
+  if (!c) return;
+  const n = S.tasks.filter(t => sameClient(t, c.name)).length;
+  openSheet(`
+    <div class="sheet-head"><span class="cmark" style="${lblStyle(c.color)}">${esc(clientInitials(c.name))}</span><h3>${esc(c.name)}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div class="menu">
+      <button id="cmEdit">${ICON.edit} Renomear ou mudar cor</button>
+      <div class="menu-sep"></div>
+      <button class="danger" id="cmDel">${ICON.trash} Excluir cliente</button>
+    </div>
+    <div id="cmZone"></div>`);
+  $('#cmEdit').onclick = () => openClient(c);
+  $('#cmDel').onclick = () => {
+    $('#cmZone').innerHTML = `<div class="confirm"><b>Excluir o cliente "${esc(c.name)}"?</b>
+      ${n ? `<p>Ele tem ${plural(n, 'tarefa', 'tarefas')}. O que fazer com ${n === 1 ? 'ela' : 'elas'}?</p>
+      <div class="radio-list"><label><input type="radio" name="cdest" value="keep" checked>Manter as tarefas, sem cliente</label><label><input type="radio" name="cdest" value="del">Excluir as tarefas também</label></div>` : ''}
+      <div class="row"><button class="btn btn-danger-solid" id="cmYes">Excluir cliente</button><button class="btn btn-ghost" data-close>Cancelar</button></div></div>`;
+    $('#cmZone').scrollIntoView({ block: 'nearest' });
+    $('#cmYes').onclick = async () => {
+      const hit = S.tasks.filter(t => sameClient(t, c.name)).map(t => t.id);
+      try {
+        if (hit.length) { if ($('input[name=cdest]:checked')?.value === 'del') await store.deleteTasks(hit); else await store.batchUpdate(hit.map(id => ({ id, patch: { client: '' } }))); }
+        const meta = S.clientsMeta.filter(x => x.id !== c.id && x.name.toLowerCase() !== c.name.toLowerCase());
+        await store.saveClients(meta); S.clientsMeta = meta;
+        closeSheet(); S.view = 'clients'; savePrefs(); render(); toast('Cliente excluído');
+      } catch (e) { toast(errMsg(e)); }
+    };
+  };
+}
+function exitSelect(rerender = true) { S.selecting = false; S.selected.clear(); if (rerender) render(); }
+
+/* ---------- Ações ---------- */
+async function moveTasks(ids, column) {
+  try {
+    await store.moveTasks(ids, column);
+    toast(`${ids.length > 1 ? plural(ids.length, 'tarefa movida', 'tarefas movidas') : 'Movida'} para ${colById(column).name}`);
+  } catch (e) { toast(errMsg(e)); }
+}
+async function deleteTasks(ids, fromSelection) {
+  const backup = S.tasks.filter(t => ids.includes(t.id)).map(t => ({ ...t }));
+  if (!backup.length) return;
+  try {
+    await store.deleteTasks(ids);
+    if (fromSelection) exitSelect();
+    closeSheet();
+    toast(backup.length > 1 ? plural(backup.length, 'tarefa excluída', 'tarefas excluídas') : 'Tarefa excluída', { label: 'Desfazer', run: () => store.restoreTasks(backup).then(() => toast('Restaurada')).catch(e => toast(errMsg(e))) });
+  } catch (e) { toast(errMsg(e)); }
+}
+function clearExamples() {
+  const ids = S.tasks.filter(t => t.example).map(t => t.id);
+  openSheet(`
+    <div class="sheet-head"><h3>Apagar tarefas de exemplo?</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <p class="meta-line">${plural(ids.length, 'tarefa de exemplo vai', 'tarefas de exemplo vão')} sair do quadro. As tarefas que vocês criaram continuam.</p>
+    <div class="actions"><div class="right"><button class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-danger-solid" id="exYes">${ICON.trash} Apagar exemplos</button></div></div>`);
+  $('#exYes').onclick = () => deleteTasks(ids);
+}
+
+/* ---------- Folhas ---------- */
+function openSheet(html) {
+  closeSheet();
+  const w = document.createElement('div'); w.className = 'sheet-wrap'; w.id = 'sheet';
+  w.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  w.addEventListener('click', e => { if (e.target === w || e.target.closest('[data-close]')) closeSheet(); });
+  document.body.appendChild(w);
+  document.addEventListener('keydown', escClose);
+  return w;
+}
+function escClose(e) { if (e.key === 'Escape') closeSheet(); }
+function closeSheet() { $('#sheet')?.remove(); document.removeEventListener('keydown', escClose); }
+
+function openTaskMenu(id) {
+  const t = S.tasks.find(x => x.id === id); if (!t) return;
+  const cur = colById(t.column).id;
+  openSheet(`
+    <div class="sheet-head"><h3>${esc(t.title)}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div class="field"><label>Mover para</label>
+      <div class="move-grid">${S.columns.map(c => `<button data-moveto="${esc(c.id)}" aria-current="${c.id === cur}"><span class="dot" style="background:${COLORS[c.color] || COLORS.sky}"></span>${esc(c.name)}</button>`).join('')}</div>
+    </div>
+    <div class="menu">
+      <button id="mEdit">${ICON.edit} Abrir e editar</button>
+      <button class="danger" id="mDel">${ICON.trash} Excluir tarefa</button>
+    </div>`);
+  $$('[data-moveto]').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.moveto !== cur) moveTasks([id], b.dataset.moveto); });
+  $('#mEdit').onclick = () => openTask(t);
+  $('#mDel').onclick = () => deleteTasks([id]);
+}
+
+function openMoveSheet(ids) {
+  openSheet(`
+    <div class="sheet-head"><h3>Mover ${plural(ids.length, 'tarefa', 'tarefas')}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div class="move-grid">${S.columns.map(c => `<button data-moveto="${esc(c.id)}"><span class="dot" style="background:${COLORS[c.color] || COLORS.sky}"></span>${esc(c.name)}</button>`).join('')}</div>`);
+  $$('[data-moveto]').forEach(b => b.onclick = async () => { closeSheet(); await moveTasks(ids, b.dataset.moveto); exitSelect(); });
+}
+
+function openColumnMenu(id) {
+  const c = colById(id), n = S.tasks.filter(t => colById(t.column).id === c.id).length;
+  openSheet(`
+    <div class="sheet-head"><h3><span class="dot" style="display:inline-block;margin-right:8px;background:${COLORS[c.color] || COLORS.sky}"></span>${esc(c.name)}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <p class="meta-line">${plural(n, 'tarefa nesta coluna', 'tarefas nesta coluna')}</p>
+    <div class="menu">
+      <button id="cAdd">${ICON.plus} Adicionar tarefa aqui</button>
+      <button id="cEdit">${ICON.edit} Renomear ou mudar cor</button>
+      ${n ? `<button id="cClear">${ICON.broom} Excluir todas as tarefas desta coluna</button>` : ''}
+      <div class="menu-sep"></div>
+      <button class="danger" id="cDel" ${S.columns.length < 2 ? 'disabled' : ''}>${ICON.trash} Excluir coluna</button>
+      ${S.columns.length < 2 ? '<span class="hint">O quadro precisa de pelo menos uma coluna.</span>' : ''}
+    </div>
+    <div id="cZone"></div>`);
+  $('#cAdd').onclick = () => openTask(null, c.id);
+  $('#cEdit').onclick = () => openColumn(c);
+  $('#cClear')?.addEventListener('click', () => {
+    $('#cZone').innerHTML = `<div class="confirm"><b>Excluir ${plural(n, 'tarefa', 'tarefas')} de "${esc(c.name)}"?</b><p>Você ainda pode desfazer logo em seguida.</p><div class="row"><button class="btn btn-danger-solid" id="cClearYes">Excluir tarefas</button><button class="btn btn-ghost" data-close>Cancelar</button></div></div>`;
+    $('#cClearYes').onclick = () => deleteTasks(S.tasks.filter(t => colById(t.column).id === c.id).map(t => t.id));
+  });
+  $('#cDel').onclick = () => {
+    if (S.columns.length < 2) return;
+    const others = S.columns.filter(x => x.id !== c.id);
+    $('#cZone').innerHTML = `<div class="confirm"><b>Excluir a coluna "${esc(c.name)}"?</b>
+      ${n ? `<p>O que fazer com ${n === 1 ? 'a tarefa' : 'as ' + n + ' tarefas'} dela?</p>
+      <div class="radio-list">
+        ${others.map((o, i) => `<label><input type="radio" name="dest" value="${esc(o.id)}" ${i === 0 ? 'checked' : ''}>Mover para "${esc(o.name)}"</label>`).join('')}
+        <label><input type="radio" name="dest" value="__del">Excluir as tarefas também</label>
+      </div>` : ''}
+      <div class="row"><button class="btn btn-danger-solid" id="cDelYes">Excluir coluna</button><button class="btn btn-ghost" data-close>Cancelar</button></div></div>`;
+    $('#cDelYes').onclick = async () => {
+      const dest = $('input[name=dest]:checked')?.value;
+      const ids = S.tasks.filter(t => colById(t.column).id === c.id).map(t => t.id);
+      try {
+        if (ids.length && dest === '__del') await store.deleteTasks(ids);
+        else if (ids.length) await store.moveTasks(ids, dest);
+        await store.saveBoard(others);
+        if (S.col === c.id) S.col = others[0].id;
+        closeSheet(); toast('Coluna excluída');
+      } catch (e) { toast(errMsg(e)); }
+    };
+  };
+}
+
+function openColumn(c) {
+  const isNew = !c, st = { color: c?.color || ['orange', 'violet', 'sky', 'lime', 'indigo', 'ok'][S.columns.length % 6] };
+  openSheet(`
+    <div class="sheet-head"><h3>${isNew ? 'Nova coluna' : 'Editar coluna'}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div id="colErr"></div>
+    <div class="field"><label for="colName">Nome da coluna</label><input class="input" id="colName" maxlength="30" value="${esc(c?.name || '')}" placeholder="Ex.: Ideias, Agendado, Gravação"></div>
+    <div class="field"><label>Cor</label><div class="colors">${Object.keys(COLORS).filter(k => k !== 'late').map(k => `<button type="button" data-color="${k}" aria-pressed="${st.color === k}" style="background:${COLORS[k]}" aria-label="Cor ${k}"></button>`).join('')}</div></div>
+    <div class="actions"><div class="right"><button class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" id="colSave">${isNew ? 'Criar coluna' : 'Salvar'}</button></div></div>`);
+  $$('[data-color]').forEach(b => b.onclick = () => { st.color = b.dataset.color; $$('[data-color]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+  setTimeout(() => $('#colName').focus(), 50);
+  const save = async () => {
+    const name = $('#colName').value.trim();
+    if (!name) { $('#colErr').innerHTML = '<div class="err">Dê um nome para a coluna.</div>'; return; }
+    const cols = isNew ? [...S.columns, { id: 'c' + uid(), name, color: st.color }] : S.columns.map(x => x.id === c.id ? { ...x, name, color: st.color } : x);
+    try { await store.saveBoard(cols); if (isNew) S.col = cols[cols.length - 1].id; closeSheet(); toast(isNew ? 'Coluna criada' : 'Coluna salva'); } catch (e) { toast(errMsg(e)); }
+  };
+  $('#colSave').onclick = save;
+  $('#colName').onkeydown = e => { if (e.key === 'Enter') save(); };
+}
+
+function openTask(t, col, draft) {
+  const isNew = !t;
+  const presetClient = S.view === 'client' && !['*', '__none'].includes(S.clientOpen) ? S.clientOpen : '';
+  const d = draft || (t ? JSON.parse(JSON.stringify(t)) : { title: '', desc: '', client: presetClient, column: colById(col).id, assignee: S.me.uid, due: '', prio: 'media', checklist: [], labels: S.label ? [S.label] : [] });
+  d.checklist = d.checklist || [];
+  if (!draft) d.labels = t ? taskLabelIds(t) : d.labels;
+  const users = teamList(), creator = t && S.users[t.createdBy];
+  const w = openSheet(`
+    <div class="sheet-head"><h3>${isNew ? 'Nova tarefa' : 'Editar tarefa'}</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div id="tErr"></div>
+    <div class="field"><label for="tTitle">O que precisa ser feito?</label><input class="input" id="tTitle" maxlength="120" value="${esc(d.title)}" placeholder="Ex.: Carrossel de dicas para o cliente"></div>
+    <div class="field"><label for="tClient">Cliente</label><select class="input" id="tClient"><option value="">Sem cliente (interno)</option>${clients().map(c => `<option value="${esc(c)}" ${sameClient({ client: c }, d.client) ? 'selected' : ''}>${esc(c)}</option>`).join('')}<option value="__new">+ Novo cliente…</option></select></div>
+    <div class="field"><div class="field-head"><label>Etiquetas</label><button type="button" class="link" id="tLblEdit">Editar etiquetas</button></div><div class="lbl-pick" id="lblPick"></div></div>
+    <div class="row2">
+      <div class="field"><label for="tWho">Quem faz</label><select class="input" id="tWho"><option value="">Ninguém ainda</option>${users.map(u => `<option value="${esc(u.id)}" ${d.assignee === u.id ? 'selected' : ''}>${esc(u.name)}${u.id === S.me.uid ? ' (eu)' : ''}</option>`).join('')}</select></div>
+      <div class="field"><label for="tDue">Prazo</label><input class="input" id="tDue" type="date" value="${esc(d.due)}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="tCol">Etapa</label><select class="input" id="tCol">${S.columns.map(c => `<option value="${esc(c.id)}" ${colById(d.column).id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="tPrio">Prioridade</label><select class="input" id="tPrio">${Object.entries(PRIOS).map(([k, v]) => `<option value="${k}" ${d.prio === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label for="tDesc">Detalhes</label><textarea class="input" id="tDesc" maxlength="3000" placeholder="Briefing, links, referências…">${esc(d.desc)}</textarea></div>
+    <div class="field"><label for="ckNew">Checklist</label><div id="ckWrap"></div>
+      <div class="ck-add"><input class="input" id="ckNew" maxlength="120" placeholder="Adicionar um passo"><button class="btn btn-lime" id="ckAdd" type="button" aria-label="Adicionar passo">${ICON.plus}</button></div>
+    </div>
+    ${t ? `<p class="meta-line">Criada${creator ? ' por ' + esc(creator.name) : ''}${t.createdAt ? ' em ' + new Date(t.createdAt).toLocaleDateString('pt-BR') : ''}${t.updatedBy && S.users[t.updatedBy] ? ' · última alteração por ' + esc(S.users[t.updatedBy].name) : ''}</p>` : ''}
+    <div class="actions">
+      ${t ? `<button class="btn btn-danger" id="tDel" type="button">${ICON.trash} Excluir</button>` : ''}
+      <div class="right"><button class="btn btn-ghost" data-close type="button">Cancelar</button><button class="btn btn-primary" id="tSave" type="button">${isNew ? 'Criar tarefa' : 'Salvar'}</button></div>
+    </div>`);
+  const renderCk = () => {
+    const done = d.checklist.filter(x => x.done).length;
+    $('#ckWrap').innerHTML = (d.checklist.length ? `<div class="progress"><i style="width:${Math.round(done / d.checklist.length * 100)}%"></i></div>` : '') +
+      `<div class="checklist">${d.checklist.map(x => `<div class="ck ${x.done ? 'done' : ''}"><input type="checkbox" id="ck-${x.id}" data-ck="${x.id}" ${x.done ? 'checked' : ''} aria-label="${esc(x.text)}"><span>${esc(x.text)}</span><button type="button" data-ckdel="${x.id}" aria-label="Remover passo">${ICON.x}</button></div>`).join('')}</div>`;
+    w.querySelectorAll('[data-ck]').forEach(c => c.onchange = () => { d.checklist.find(x => x.id === c.dataset.ck).done = c.checked; renderCk(); });
+    w.querySelectorAll('[data-ckdel]').forEach(b => b.onclick = () => { d.checklist = d.checklist.filter(x => x.id !== b.dataset.ckdel); renderCk(); });
+  };
+  renderCk();
+  const grab = () => Object.assign(d, { title: $('#tTitle').value, desc: $('#tDesc').value, client: $('#tClient').value, assignee: $('#tWho').value, due: $('#tDue').value, column: $('#tCol').value, prio: $('#tPrio').value });
+  const renderLbl = () => {
+    $('#lblPick').innerHTML = S.labels.map(l => `<button type="button" style="${lblStyle(l.color)}" aria-pressed="${d.labels.includes(l.id)}" data-pick="${esc(l.id)}">${ICON.check}${esc(l.name)}</button>`).join('') +
+      `<button type="button" class="new" id="lblNew">${ICON.plus} Nova etiqueta</button>`;
+    w.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { const id = b.dataset.pick; d.labels = d.labels.includes(id) ? d.labels.filter(x => x !== id) : [...d.labels, id]; renderLbl(); });
+    $('#lblNew').onclick = () => { grab(); openLabel(null, nl => { if (nl) d.labels.push(nl.id); openTask(t, col, d); }); };
+  };
+  renderLbl();
+  $('#tClient').onchange = e => { if (e.target.value !== '__new') return; grab(); d.client = ''; openClient(null, nc => { if (nc) d.client = nc.name; openTask(t, col, d); }); };
+  $('#tLblEdit').onclick = () => { grab(); openLabelsManager(() => openTask(t, col, d)); };
+  const addCk = () => { const v = $('#ckNew').value.trim(); if (!v) return; d.checklist.push({ id: uid(), text: v, done: false }); $('#ckNew').value = ''; renderCk(); $('#ckNew').focus(); };
+  $('#ckAdd').onclick = addCk;
+  $('#ckNew').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); addCk(); } };
+  if (isNew) setTimeout(() => $('#tTitle').focus(), 50);
+  $('#tDel')?.addEventListener('click', () => deleteTasks([t.id]));
+  $('#tSave').onclick = async () => {
+    const title = $('#tTitle').value.trim();
+    if (!title) { $('#tErr').innerHTML = '<div class="err">Escreva o que precisa ser feito.</div>'; $('#tTitle').focus(); return; }
+    const data = {
+      title, desc: $('#tDesc').value.trim(), client: $('#tClient').value.trim(), labels: d.labels.filter(id => labelById(id)), type: '',
+      assignee: $('#tWho').value, due: $('#tDue').value, column: $('#tCol').value, prio: $('#tPrio').value,
+      checklist: d.checklist, updatedAt: Date.now(), updatedBy: S.me.uid,
+    };
+    $('#tSave').disabled = true;
+    try {
+      if (isNew) await store.addTask({ ...data, createdAt: Date.now(), createdBy: S.me.uid });
+      else await store.updateTask(t.id, data);
+      closeSheet(); toast(isNew ? 'Tarefa criada' : 'Tarefa salva');
+    } catch (e) { $('#tSave').disabled = false; $('#tErr').innerHTML = `<div class="err">${esc(errMsg(e))}</div>`; }
+  };
+}
+
+function openMenu() {
+  openSheet(`
+    <div class="sheet-head">${avatar(S.profile, 'lg')}<h3>${esc(S.profile.name)}<span class="meta-line" style="display:block;font:400 12px var(--body)">${esc(S.me.email || '')}</span></h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div class="menu">
+      <button id="mProfile">${ICON.user} Editar meu perfil</button>
+      <button id="mCols">${ICON.cols} Organizar colunas</button>
+      <button id="mLbls">${ICON.tag} Etiquetas</button>
+      ${S.tasks.some(t => t.example) ? `<button id="mEx">${ICON.trash} Apagar tarefas de exemplo</button>` : ''}
+      <div class="menu-sep"></div>
+      <button class="danger" id="mOut">${ICON.out} Sair da conta</button>
+    </div>`);
+  $('#mProfile').onclick = openProfile;
+  $('#mCols').onclick = openColumnsManager;
+  $('#mLbls').onclick = () => openLabelsManager();
+  $('#mEx')?.addEventListener('click', clearExamples);
+  $('#mOut').onclick = async () => { closeSheet(); S.unsub.forEach(f => f && f()); S.unsub = []; await store.signOut(); };
+}
+
+function openColumnsManager() {
+  const draw = () => {
+    openSheet(`
+      <div class="sheet-head"><h3>Organizar colunas</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+      <p class="meta-line">Use as setas para mudar a ordem. Toque no nome para editar.</p>
+      <div class="menu">${S.columns.map((c, i) => `
+        <div style="display:flex;align-items:center;gap:4px">
+          <button style="flex:1" data-cedit="${esc(c.id)}"><span class="dot" style="background:${COLORS[c.color] || COLORS.sky}"></span>${esc(c.name)}</button>
+          <button class="more" data-up="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Subir">↑</button>
+          <button class="more" data-down="${i}" ${i === S.columns.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>
+          <button class="more" data-cdel="${esc(c.id)}" aria-label="Excluir coluna ${esc(c.name)}">${ICON.trash}</button>
+        </div>`).join('')}
+        <button id="cmAdd">${ICON.plus} Nova coluna</button>
+      </div>`);
+    const swap = async (i, j) => { const cols = [...S.columns]; [cols[i], cols[j]] = [cols[j], cols[i]]; await store.saveBoard(cols); S.columns = cols; draw(); };
+    $$('[data-up]').forEach(b => b.onclick = () => swap(+b.dataset.up, +b.dataset.up - 1));
+    $$('[data-down]').forEach(b => b.onclick = () => swap(+b.dataset.down, +b.dataset.down + 1));
+    $$('[data-cedit]').forEach(b => b.onclick = () => openColumn(colById(b.dataset.cedit)));
+    $$('[data-cdel]').forEach(b => b.onclick = () => { openColumnMenu(b.dataset.cdel); setTimeout(() => $('#cDel')?.click()); });
+    $('#cmAdd').onclick = () => openColumn(null);
+  };
+  draw();
+}
+
+/* ---------- Etiquetas ---------- */
+const labelUse = id => S.tasks.filter(t => taskLabelIds(t).includes(id)).length;
+function openLabelsManager(back) {
+  openSheet(`
+    <div class="sheet-head"><h3>Etiquetas</h3><button class="x" id="lmClose" aria-label="Fechar">${ICON.x}</button></div>
+    <p class="meta-line">Toque numa etiqueta para mudar o nome ou a cor. Elas valem para toda a equipe.</p>
+    <div class="menu">
+      ${S.labels.length ? S.labels.map(l => `<div class="lbl-row">
+        <button class="lbl-name" style="${lblStyle(l.color)}" data-ledit="${esc(l.id)}">${esc(l.name)}</button>
+        <span class="lbl-use">${plural(labelUse(l.id), 'tarefa', 'tarefas')}</span>
+        <button class="more" data-ldel="${esc(l.id)}" aria-label="Excluir etiqueta ${esc(l.name)}">${ICON.trash}</button>
+      </div>`).join('') : '<p class="meta-line">Nenhuma etiqueta ainda.</p>'}
+      <button id="lmAdd">${ICON.plus} Nova etiqueta</button>
+    </div>
+    <div id="lmZone"></div>
+    ${back ? '<div class="actions"><div class="right"><button class="btn btn-primary" id="lmBack">Voltar para a tarefa</button></div></div>' : ''}`);
+  const again = () => openLabelsManager(back);
+  const done = () => back ? back() : closeSheet();
+  $('#lmClose').onclick = done;
+  $('#lmBack')?.addEventListener('click', done);
+  $('#lmAdd').onclick = () => openLabel(null, again);
+  $$('[data-ledit]').forEach(b => b.onclick = () => openLabel(labelById(b.dataset.ledit), again));
+  $$('[data-ldel]').forEach(b => b.onclick = () => {
+    const l = labelById(b.dataset.ldel), n = labelUse(l.id);
+    $('#lmZone').innerHTML = `<div class="confirm"><b>Excluir a etiqueta "${esc(l.name)}"?</b><p>${n ? `Ela sai de ${plural(n, 'tarefa', 'tarefas')}. As tarefas continuam no quadro.` : 'Nenhuma tarefa usa essa etiqueta.'}</p>
+      <div class="row"><button class="btn btn-danger-solid" id="ldYes">Excluir etiqueta</button><button class="btn btn-ghost" id="ldNo">Cancelar</button></div></div>`;
+    $('#lmZone').scrollIntoView({ block: 'nearest' });
+    $('#ldNo').onclick = () => $('#lmZone').innerHTML = '';
+    $('#ldYes').onclick = async () => {
+      try {
+        const hit = S.tasks.filter(t => taskLabelIds(t).includes(l.id) || Array.isArray(t.labels) && t.labels.includes(l.id));
+        if (hit.length) await store.batchUpdate(hit.map(t => ({ id: t.id, patch: { labels: taskLabelIds(t).filter(x => x !== l.id), type: '' } })));
+        await store.saveLabels(S.labels.filter(x => x.id !== l.id));
+        S.labels = S.labels.filter(x => x.id !== l.id);
+        if (S.label === l.id) S.label = '';
+        toast('Etiqueta excluída'); again();
+      } catch (e) { toast(errMsg(e)); }
+    };
+  });
+}
+function openLabel(l, after) {
+  const isNew = !l, keys = Object.keys(LABEL_COLORS);
+  const st = { color: l?.color || keys[S.labels.length % keys.length] };
+  openSheet(`
+    <div class="sheet-head"><h3>${isNew ? 'Nova etiqueta' : 'Editar etiqueta'}</h3><button class="x" id="leX" aria-label="Fechar">${ICON.x}</button></div>
+    <div id="leErr"></div>
+    <span class="lbl preview-lbl" id="lePrev" style="${lblStyle(st.color)}">${esc(l?.name || 'Nome da etiqueta')}</span>
+    <div class="field"><label for="leName">Nome</label><input class="input" id="leName" maxlength="24" value="${esc(l?.name || '')}" placeholder="Ex.: Carrossel, Urgente, Cliente novo"></div>
+    <div class="field"><label>Cor</label><div class="colors">${keys.map(k => `<button type="button" data-lc="${k}" aria-pressed="${st.color === k}" style="background:${LABEL_COLORS[k].bg};color:${LABEL_COLORS[k].fg}" aria-label="${LABEL_COLORS[k].name}" title="${LABEL_COLORS[k].name}">Aa</button>`).join('')}</div></div>
+    <div class="actions"><div class="right"><button class="btn btn-ghost" id="leCancel">Cancelar</button><button class="btn btn-primary" id="leSave">${isNew ? 'Criar etiqueta' : 'Salvar'}</button></div></div>`);
+  const prev = () => { const p = $('#lePrev'); p.textContent = $('#leName').value.trim() || 'Nome da etiqueta'; p.setAttribute('style', lblStyle(st.color)); };
+  $$('[data-lc]').forEach(b => b.onclick = () => { st.color = b.dataset.lc; $$('[data-lc]').forEach(x => x.setAttribute('aria-pressed', x === b)); prev(); });
+  $('#leName').oninput = prev;
+  setTimeout(() => $('#leName').focus(), 50);
+  const leave = () => after ? after(null) : closeSheet();
+  $('#leX').onclick = $('#leCancel').onclick = leave;
+  const save = async () => {
+    const name = $('#leName').value.trim();
+    if (!name) { $('#leErr').innerHTML = '<div class="err">Dê um nome para a etiqueta.</div>'; return; }
+    if (S.labels.some(x => x.name.toLowerCase() === name.toLowerCase() && x.id !== l?.id)) { $('#leErr').innerHTML = '<div class="err">Já existe uma etiqueta com esse nome.</div>'; return; }
+    const nl = isNew ? { id: 'l' + uid(), name, color: st.color } : { ...l, name, color: st.color };
+    const labels = isNew ? [...S.labels, nl] : S.labels.map(x => x.id === l.id ? nl : x);
+    try { await store.saveLabels(labels); S.labels = labels; toast(isNew ? 'Etiqueta criada' : 'Etiqueta salva'); after ? after(nl) : closeSheet(); }
+    catch (e) { toast(errMsg(e)); }
+  };
+  $('#leSave').onclick = save;
+  $('#leName').onkeydown = e => { if (e.key === 'Enter') save(); };
+}
+
+function openProfile() {
+  const st = { photo: S.profile.photo || '' };
+  openSheet(`
+    <div class="sheet-head"><h3>Meu perfil</h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <p class="meta-line">${esc(S.me.email || '')}</p>
+    <div id="pErr"></div>
+    ${profileFields(S.profile)}
+    <div class="actions"><div class="right"><button class="btn btn-ghost" data-close>Cancelar</button><button class="btn btn-primary" id="pSave">Salvar perfil</button></div></div>`);
+  bindProfileFields(st);
+  $('#pSave').onclick = async () => {
+    const name = $('#pName').value.trim();
+    if (!name) { $('#pErr').innerHTML = '<div class="err">O nome de usuário não pode ficar vazio.</div>'; return; }
+    try { await store.saveUser(S.me.uid, { name, role: $('#pRole').value.trim(), photo: st.photo }); closeSheet(); toast('Perfil atualizado'); }
+    catch (e) { $('#pErr').innerHTML = `<div class="err">${esc(errMsg(e))}</div>`; }
+  };
+}
+
+/* =========================================================
+   Início
+   ========================================================= */
+store.onAuth(async u => {
+  S.me = u;
+  if (!u) { S.profile = null; return renderAuth(); }
+  try {
+    const p = await store.getUser(u.uid);
+    if (p && p.name) { S.profile = p; startApp(); }
+    else if (!$('#pf')) renderProfileSetup();
+  } catch (e) { renderAuth(errMsg(e)); }
+});
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
