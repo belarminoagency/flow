@@ -1,4 +1,4 @@
-const CACHE = 'bflow-v1';
+const CACHE = 'bflow-v2';
 const SHELL = ['./', './index.html', './config.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

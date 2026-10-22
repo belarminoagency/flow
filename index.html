@@ -210,6 +210,11 @@ textarea.input{min-height:84px;resize:vertical}
 .stats b{display:block;font:800 18px/1.1 var(--display);font-variant-numeric:tabular-nums}
 .stats span{font-size:11px;color:var(--muted)}
 .stats .late b{color:var(--late)}
+.member.request{border:2px solid var(--lime)}
+.req-actions{display:flex;gap:6px;margin-left:auto}
+.nav button{position:relative}
+.nav-badge{font-style:normal;background:var(--late);color:#fff;font-size:10px;font-weight:700;border-radius:999px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 5px;position:absolute;top:2px;right:calc(50% - 26px)}
+@media (min-width:760px){.nav-badge{position:static;margin-left:2px}}
 .section-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 
 /* Folhas (modais) */
@@ -549,6 +554,7 @@ function firebaseStore() {
     saveLabels: labels => fs.doc('meta/labels').set({ labels }),
     batchUpdate: async list => { for (let i = 0; i < list.length; i += 400) { const b = fs.batch(); list.slice(i, i + 400).forEach(x => b.update(T.doc(x.id), x.patch)); await b.commit(); } },
     getUser: async id => { const d = await fs.collection('users').doc(id).get(); return d.exists ? { id, ...d.data() } : null; },
+    onMe: (id, cb, onErr) => fs.collection('users').doc(id).onSnapshot(d => cb(d.exists ? { id, ...d.data() } : null), onErr),
     saveUser: (id, data) => fs.collection('users').doc(id).set(data, { merge: true }),
     addTask: t => T.add(t),
     updateTask: (id, p) => T.doc(id).update(p),
@@ -559,16 +565,16 @@ function firebaseStore() {
 }
 
 function demoStore() {
-  const KEY = 'bflow-demo-v3';
+  const KEY = 'bflow-demo-v4';
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };
   let db = load();
   if (!db) {
     db = {
       session: null, columns: null, labels: null, clients: null,
       users: {
-        k: { id: 'k', name: 'Kaique', email: 'kaique@exemplo.com', role: 'CEO', photo: '' },
-        ev: { id: 'ev', name: 'Evelyn', email: 'evelyn@exemplo.com', role: 'Organização e posts', photo: '' },
-        em: { id: 'em', name: 'Emily', email: 'emily@exemplo.com', role: 'Edição e análise', photo: '' },
+        k: { id: 'k', name: 'Kaique', email: 'kaique@exemplo.com', role: 'CEO', photo: '', aprovado: true },
+        ev: { id: 'ev', name: 'Evelyn', email: 'evelyn@exemplo.com', role: 'Organização e posts', photo: '', aprovado: true },
+        em: { id: 'em', name: 'Emily', email: 'emily@exemplo.com', role: 'Edição e análise', photo: '', aprovado: true },
       },
       tasks: [
         { title: 'Roteiro de stories da semana', client: 'Cliente exemplo A', type: 'Stories', column: 'todo', assignee: 'ev', due: dayStr(1), prio: 'alta', checklist: [{ id: uid(), text: 'Ideias', done: true }, { id: uid(), text: 'Textos', done: false }, { id: uid(), text: 'Aprovar com cliente', done: false }] },
@@ -610,6 +616,7 @@ function demoStore() {
     saveLabels: async labels => { db.labels = labels; emit(); },
     batchUpdate: async list => { list.forEach(x => { const t = db.tasks.find(y => y.id === x.id); if (t) Object.assign(t, x.patch); }); emit(); },
     getUser: async id => db.users[id]?.name ? { ...db.users[id] } : null,
+    onMe: (id, cb) => { const f = u => cb(u[id] || null); subs.users.push(f); setTimeout(() => f(db.users)); return () => { subs.users = subs.users.filter(x => x !== f); }; },
     saveUser: async (id, data) => { db.users[id] = { ...(db.users[id] || { id }), ...data, id }; emit(); },
     afterSignUp: () => subs.auth.forEach(f => f(sess())),
     addTask: async t => { db.tasks.push({ id: uid(), ...t }); emit(); },
@@ -621,6 +628,10 @@ function demoStore() {
 }
 
 const store = DEMO ? demoStore() : firebaseStore();
+const ADMINS = (window.ADMIN_EMAILS || []).map(e => String(e).toLowerCase());
+const isAdminEmail = e => ADMINS.includes(String(e || '').toLowerCase());
+const isAdmin = () => DEMO ? S.me?.uid === 'k' : isAdminEmail(S.me?.email);
+const isApproved = u => !!u && (u.aprovado === true || isAdminEmail(u.email));
 
 /* =========================================================
    Estado
@@ -719,9 +730,10 @@ function renderProfileSetup() {
     if (!name) { $('#pErr').innerHTML = '<div class="err">Escolha um nome de usuário para continuar.</div>'; return; }
     $('#pGo').disabled = true;
     try {
-      const data = { name, role: $('#pRole').value.trim(), photo: st.photo, email: S.me.email, createdAt: Date.now() };
+      const data = { name, role: $('#pRole').value.trim(), photo: st.photo, email: S.me.email, createdAt: Date.now(), aprovado: isAdmin() };
       await store.saveUser(S.me.uid, data);
-      S.profile = { id: S.me.uid, ...data }; startApp();
+      S.profile = { id: S.me.uid, ...data };
+      isApproved(S.profile) ? startApp() : renderPending();
     } catch (er) { $('#pGo').disabled = false; $('#pErr').innerHTML = `<div class="err">${esc(errMsg(er))}</div>`; }
   };
 }
@@ -732,6 +744,7 @@ function renderProfileSetup() {
 function startApp() {
   S.unsub.forEach(f => f && f()); S.unsub = [];
   const onErr = e => toast(errMsg(e));
+  S.unsub.push(store.onMe(S.me.uid, me => { if (me && !isApproved(me)) { S.profile = me; renderPending(); } }, () => {}));
   S.unsub.push(store.onUsers(u => { S.users = u; if (u[S.me.uid]?.name) S.profile = u[S.me.uid]; render(); }, onErr));
   S.unsub.push(store.onTasks(t => { S.tasks = t; [...S.selected].forEach(id => { if (!t.some(x => x.id === id)) S.selected.delete(id); }); render(); }, onErr));
   S.unsub.push(store.onLabels(l => { S.labels = Array.isArray(l) ? l : DEFAULT_LABELS; if (S.label && !labelById(S.label)) S.label = ''; render(); }, onErr));
@@ -748,7 +761,8 @@ function sortTasks(a, b) {
   return (PRIO_ORDER[a.prio] ?? 1) - (PRIO_ORDER[b.prio] ?? 1) || (a.due || '9999').localeCompare(b.due || '9999') || (a.createdAt || 0) - (b.createdAt || 0);
 }
 const byDue = (a, b) => (a.due || '9999').localeCompare(b.due || '9999') || (PRIO_ORDER[a.prio] ?? 1) - (PRIO_ORDER[b.prio] ?? 1);
-const teamList = () => Object.values(S.users).filter(u => u.name).sort((a, b) => a.name.localeCompare(b.name));
+const teamList = () => Object.values(S.users).filter(u => u.name && isApproved(u)).sort((a, b) => a.name.localeCompare(b.name));
+const pendingList = () => Object.values(S.users).filter(u => u.name && !isApproved(u) && !u.recusado).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
 
 /* ---------- Clientes ---------- */
 function hashColor(name) { const k = Object.keys(LABEL_COLORS); let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0; return k[h % k.length]; }
@@ -808,7 +822,7 @@ function render() {
       <nav class="nav" role="tablist" aria-label="Seções">
         <button role="tab" aria-selected="${tab === 'home'}" data-view="home">${ICON.home}<span>Início</span></button>
         <button role="tab" aria-selected="${tab === 'clients'}" data-view="clients">${ICON.briefcase}<span>Clientes</span></button>
-        <button role="tab" aria-selected="${tab === 'team'}" data-view="team">${ICON.users}<span>Equipe</span></button>
+        <button role="tab" aria-selected="${tab === 'team'}" data-view="team">${ICON.users}<span>Equipe</span>${isAdmin() && pendingList().length ? `<i class="nav-badge">${pendingList().length}</i>` : ''}</button>
       </nav>
     </header>
     ${views[S.view]()}
@@ -1014,15 +1028,23 @@ function teamHTML() {
     const t = S.tasks.filter(x => x.assignee === u.id), open = t.filter(isOpen);
     const late = open.filter(x => x.due && x.due < today).length;
     const rev = t.filter(x => colById(x.column).id === 'review').length;
+    const canRemove = isAdmin() && u.id !== S.me.uid && !isAdminEmail(u.email);
     return `<div class="member">${avatar(u)}<div class="member-info"><div class="member-name">${esc(u.name)}${u.id === S.me.uid ? ' (você)' : ''}</div><div class="member-sub">${esc(u.role || u.email || '')}</div></div>
-      <div class="stats"><div><b>${open.length}</b><span>abertas</span></div><div><b>${rev}</b><span>aprovação</span></div><div class="${late ? 'late' : ''}"><b>${late}</b><span>atrasadas</span></div></div></div>`;
+      <div class="stats"><div><b>${open.length}</b><span>abertas</span></div><div><b>${rev}</b><span>aprovação</span></div><div class="${late ? 'late' : ''}"><b>${late}</b><span>atrasadas</span></div></div>
+      ${canRemove ? `<button class="more" data-member="${esc(u.id)}" aria-label="Opções de ${esc(u.name)}">${ICON.dots}</button>` : ''}</div>`;
   }).join('');
   const none = S.tasks.filter(t => !t.assignee && isOpen(t)).length;
+  const pend = isAdmin() ? pendingList() : [];
+  const refused = isAdmin() ? Object.values(S.users).filter(u => u.name && !isApproved(u) && u.recusado) : [];
   return `<div class="wrap"><section class="team">
+    ${pend.length ? `<div class="sec-head" style="margin-top:6px"><h2>Pedidos de acesso</h2><span class="badge">${pend.length}</span></div>
+    ${pend.map(u => `<div class="member request">${avatar(u)}<div class="member-info"><div class="member-name">${esc(u.name)}</div><div class="member-sub">${esc(u.email || '')}${u.role ? ' · ' + esc(u.role) : ''}</div></div>
+      <div class="req-actions"><button class="btn btn-ghost" data-refuse="${esc(u.id)}">Recusar</button><button class="btn btn-primary" data-approve="${esc(u.id)}">${ICON.check} Aprovar</button></div></div>`).join('')}` : ''}
     <div class="sec-head" style="margin-top:6px"><h2>Equipe</h2><span class="count">${users.length}</span></div>
     ${rows}
     ${none ? `<p class="meta-line">${plural(none, 'tarefa aberta está', 'tarefas abertas estão')} sem responsável.</p>` : ''}
-    <p class="meta-line">Para entrar na equipe, a pessoa abre o app, toca em "Criar conta" e escolhe nome e foto.</p>
+    <p class="meta-line">Para entrar na equipe, a pessoa abre o app, toca em "Criar conta" e escolhe nome e foto.${isAdmin() ? ' O pedido aparece aqui pra você aprovar.' : ' Depois o Kaique aprova o acesso.'}</p>
+    ${refused.length ? `<h3 class="grp">Sem acesso</h3>${refused.map(u => `<div class="member">${avatar(u)}<div class="member-info"><div class="member-name">${esc(u.name)}</div><div class="member-sub">${esc(u.email || '')}</div></div><button class="btn btn-soft" data-approve="${esc(u.id)}">Liberar acesso</button></div>`).join('')}` : ''}
   </section></div>`;
 }
 
@@ -1034,6 +1056,9 @@ function bindApp() {
   $$('[data-quicklist]').forEach(b => b.onclick = () => openListSheet(b.dataset.quicklist));
   $$('[data-done]').forEach(b => b.onclick = () => completeTask(b.dataset.done));
   $('#newClient')?.addEventListener('click', () => openClient(null));
+  $$('[data-approve]').forEach(b => b.onclick = async () => { try { await store.saveUser(b.dataset.approve, { aprovado: true, recusado: false }); toast(`${S.users[b.dataset.approve]?.name || 'Pessoa'} agora faz parte da equipe`); } catch (e) { toast(errMsg(e)); } });
+  $$('[data-refuse]').forEach(b => b.onclick = async () => { try { await store.saveUser(b.dataset.refuse, { aprovado: false, recusado: true }); toast('Pedido recusado'); } catch (e) { toast(errMsg(e)); } });
+  $$('[data-member]').forEach(b => b.onclick = () => openMemberMenu(S.users[b.dataset.member]));
   $$('[data-client-open]').forEach(b => b.onclick = () => { S.clientOpen = b.dataset.clientOpen; S.view = 'client'; S.q = ''; S.client = ''; savePrefs(); render(); window.scrollTo(0, 0); });
   $('#back')?.addEventListener('click', () => { S.view = 'clients'; exitSelect(false); savePrefs(); render(); });
   $('#clientMenu')?.addEventListener('click', () => openClientMenu(clientByName(S.clientOpen)));
@@ -1471,15 +1496,45 @@ function openProfile() {
   };
 }
 
+function openMemberMenu(u) {
+  if (!u) return;
+  openSheet(`
+    <div class="sheet-head">${avatar(u, 'lg')}<h3>${esc(u.name)}<span class="meta-line" style="display:block;font:400 12px var(--body)">${esc(u.email || '')}</span></h3><button class="x" data-close aria-label="Fechar">${ICON.x}</button></div>
+    <div class="menu"><button class="danger" id="mmRemove">${ICON.out} Remover acesso ao app</button></div>
+    <div id="mmZone"></div>`);
+  $('#mmRemove').onclick = () => {
+    $('#mmZone').innerHTML = `<div class="confirm"><b>Remover ${esc(u.name)} da equipe?</b><p>A pessoa deixa de ver o app na hora. As tarefas dela continuam no quadro, e você pode liberar o acesso de novo depois.</p>
+      <div class="row"><button class="btn btn-danger-solid" id="mmYes">Remover acesso</button><button class="btn btn-ghost" data-close>Cancelar</button></div></div>`;
+    $('#mmYes').onclick = async () => { try { await store.saveUser(u.id, { aprovado: false, recusado: true }); closeSheet(); toast('Acesso removido'); } catch (e) { toast(errMsg(e)); } };
+  };
+}
+
+function renderPending() {
+  S.unsub.forEach(f => f && f()); S.unsub = [];
+  const p = S.profile || {};
+  $('#root').innerHTML = `
+  <main class="auth"><div class="auth-box">
+    <div class="brand"><div class="logo">b</div><div class="brand-name">belarmino flow<small>organizador da equipe belarmino agency</small></div></div>
+    <div class="card-form">
+      <div class="photo-pick">${avatar({ name: p.name || '?', photo: p.photo }, 'lg')}<div><b style="font-size:16px">${esc(p.name || '')}</b><p class="note">${esc(S.me?.email || '')}</p></div></div>
+      ${p.recusado ? `<div class="err">Seu acesso não está liberado no momento. Fale com o Kaique se achar que é um engano.</div>`
+        : `<h2 style="font-size:20px;color:#17158F">Aguardando aprovação</h2><p class="note" style="font-size:14px">Sua conta foi criada. Assim que o Kaique aprovar, o app abre sozinho aqui.</p>`}
+      <button class="btn btn-primary" id="pendOut" type="button">Sair da conta</button>
+    </div>
+  </div></main>`;
+  $('#pendOut').onclick = () => { S.unsub.forEach(f => f && f()); S.unsub = []; store.signOut(); };
+  S.unsub.push(store.onMe(S.me.uid, me => { if (!me) return; S.profile = me; if (isApproved(me)) startApp(); }, () => {}));
+}
+
 /* =========================================================
    Início
    ========================================================= */
 store.onAuth(async u => {
   S.me = u;
-  if (!u) { S.profile = null; return renderAuth(); }
+  if (!u) { S.unsub.forEach(f => f && f()); S.unsub = []; S.profile = null; return renderAuth(); }
   try {
     const p = await store.getUser(u.uid);
-    if (p && p.name) { S.profile = p; startApp(); }
+    if (p && p.name) { S.profile = p; isApproved(p) ? startApp() : renderPending(); }
     else if (!$('#pf')) renderProfileSetup();
   } catch (e) { renderAuth(errMsg(e)); }
 });
